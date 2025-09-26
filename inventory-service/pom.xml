@@ -5,24 +5,56 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.company</groupId>
+        <groupId>com.company.mtbp</groupId>
         <artifactId>movie-ticket-booking-platform</artifactId>
         <version>1.0.0</version>
     </parent>
+
+    <groupId>com.company.mtbp.inventory</groupId>
     <artifactId>inventory-service</artifactId>
+    <version>1.0.0</version>
+    <name>inventory-service</name>
+    <description>Movie Theater Inventory</description>
 
     <dependencies>
         <dependency>
-            <groupId>com.company</groupId>
+            <groupId>com.company.mtbp</groupId>
             <artifactId>mtbp-shared-dto</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.company</groupId>
+            <groupId>com.company.mtbp</groupId>
             <artifactId>mtbp-shared-utils</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
+        <!-- Spring Data JPA -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- MapStruct -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+            <version>1.6.0.Beta2</version>
+        </dependency>
+
+        <!-- H2 database -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <!--<scope>runtime</scope>-->
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope> <!-- recommended for Lombok -->
+        </dependency>
+
     </dependencies>
 </project>

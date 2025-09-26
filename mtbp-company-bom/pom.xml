@@ -4,13 +4,13 @@
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.company</groupId>
+    <groupId>com.company.mtbp</groupId>
     <artifactId>mtbp-company-bom</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
 
     <properties>
-        <spring.boot.version>3.3.2</spring.boot.version>
+        <spring.boot.version>3.5.5</spring.boot.version>
         <java.version>21</java.version>
     </properties>
 
@@ -18,7 +18,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
+                <artifactId>spring-boot-starter-parent</artifactId>
                 <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -35,12 +35,12 @@
             </dependency>
             <!-- Shared modules -->
             <dependency>
-                <groupId>com.company</groupId>
+                <groupId>com.company.mtbp</groupId>
                 <artifactId>mtbp-shared-dto</artifactId>
                 <version>1.0.0</version>
             </dependency>
             <dependency>
-                <groupId>com.company</groupId>
+                <groupId>com.company.mtbp</groupId>
                 <artifactId>mtbp-shared-utils</artifactId>
                 <version>1.0.0</version>
             </dependency>
