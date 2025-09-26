@@ -5,7 +5,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.company</groupId>
+        <groupId>com.company.mtbp</groupId>
         <artifactId>movie-ticket-booking-platform</artifactId>
         <version>1.0.0</version>
     </parent>
