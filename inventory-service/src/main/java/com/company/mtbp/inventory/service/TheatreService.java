@@ -7,6 +7,7 @@ import com.company.mtbp.inventory.repository.TheatreRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TheatreService {
@@ -19,9 +20,21 @@ public class TheatreService {
         this.cityRepository = cityRepository;
     }
 
+    public Theatre saveTheatre(Theatre theatre) {
+        return theatreRepository.save(theatre);
+    }
+
+    public List<Theatre> getAllTheatres() {
+        return theatreRepository.findAll();
+    }
+
+    public Optional<Theatre> getTheatreById(Long id) {
+        return theatreRepository.findById(id);
+    }
+
     public List<Theatre> getTheatresByCity(String cityName) {
-        City city = cityRepository.findByName(cityName);
-        if (city == null) return List.of();
-        return theatreRepository.findByCity(city);
+        Optional<City> city = cityRepository.findByName(cityName);
+        if (city.isEmpty()) return List.of();
+        return theatreRepository.findByCity(city.get());
     }
 }

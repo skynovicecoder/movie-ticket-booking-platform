@@ -5,6 +5,9 @@ import com.company.mtbp.inventory.entity.Movie;
 import com.company.mtbp.inventory.entity.Show;
 import com.company.mtbp.inventory.entity.Theatre;
 import com.company.mtbp.inventory.repository.ShowRepository;
+import com.company.mtbp.inventory.specifications.ShowSpecifications;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -22,8 +25,15 @@ public class ShowService {
     }
 
     // Browse shows for a movie in selected theatres on a given date
-    public List<Show> getShows(Movie movie, List<Theatre> theatres, LocalDate date) {
+    /*public List<Show> getShows(Movie movie, List<Theatre> theatres, LocalDate date) {
         return showRepository.findByMovieAndTheatreInAndShowDate(movie, theatres, date);
+    }*/
+    public List<Show> getShows(Movie movie, String cityName, LocalDate date) {
+        Specification<Show> spec = ShowSpecifications.byMovie(movie)
+                .and(ShowSpecifications.byCity(cityName))
+                .and(ShowSpecifications.byDate(date));
+
+        return showRepository.findAll(spec);
     }
 
     // Get a show by its ID

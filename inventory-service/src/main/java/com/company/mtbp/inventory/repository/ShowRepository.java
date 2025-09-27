@@ -5,6 +5,7 @@ import com.company.mtbp.inventory.entity.Movie;
 import com.company.mtbp.inventory.entity.Show;
 import com.company.mtbp.inventory.entity.Theatre;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -12,7 +13,7 @@ import java.time.LocalTime;
 import java.util.List;
 
 @Repository
-public interface ShowRepository extends JpaRepository<Show, Long> {
+public interface ShowRepository extends JpaRepository<Show, Long>, JpaSpecificationExecutor<Show> {
 
     // Browse shows for a movie in a list of theatres on a given date
     List<Show> findByMovieAndTheatreInAndShowDate(Movie movie, List<Theatre> theatres, LocalDate showDate);

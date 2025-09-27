@@ -1,5 +1,6 @@
 package com.company.mtbp.inventory.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,5 +23,6 @@ public class City {
     private String name;
 
     @OneToMany(mappedBy = "city")
+    @JsonManagedReference
     private List<Theatre> theatres;
 }

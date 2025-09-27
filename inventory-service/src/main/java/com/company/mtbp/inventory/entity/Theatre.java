@@ -1,5 +1,6 @@
 package com.company.mtbp.inventory.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,6 +28,7 @@ public class Theatre {
 
     @ManyToOne
     @JoinColumn(name = "city_id")
+    @JsonBackReference
     private City city;
 
     @OneToMany(mappedBy = "theatre")
