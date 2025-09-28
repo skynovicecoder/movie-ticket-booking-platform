@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -29,11 +30,14 @@ public class Theatre {
     @ManyToOne
     @JoinColumn(name = "city_id")
     @JsonBackReference
+    @ToString.Exclude
     private City city;
 
     @OneToMany(mappedBy = "theatre")
+    @ToString.Exclude
     private List<Show> shows;
 
     @OneToMany(mappedBy = "theatre")
+    @ToString.Exclude
     private List<Seat> seats;
 }

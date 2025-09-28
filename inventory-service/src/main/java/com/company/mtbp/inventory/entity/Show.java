@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,10 +23,12 @@ public class Show {
 
     @ManyToOne
     @JoinColumn(name = "movie_id")
+    @ToString.Exclude
     private Movie movie;
 
     @ManyToOne
     @JoinColumn(name = "theatre_id")
+    @ToString.Exclude
     private Theatre theatre;
 
     private LocalDate showDate;
@@ -39,8 +42,10 @@ public class Show {
     private String showType; // morning, afternoon, evening
 
     @OneToMany(mappedBy = "show")
+    @ToString.Exclude
     private List<Seat> seats;
 
     @OneToMany(mappedBy = "show")
+    @ToString.Exclude
     private List<BookingDetail> bookingDetails;
 }

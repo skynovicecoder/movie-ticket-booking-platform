@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,5 +33,6 @@ public class Movie {
     private String rating;
 
     @OneToMany(mappedBy = "movie")
+    @ToString.Exclude
     private List<Show> shows;
 }
