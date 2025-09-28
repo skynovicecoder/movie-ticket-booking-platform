@@ -10,6 +10,7 @@ import com.company.mtbp.inventory.repository.SeatRepository;
 import com.company.mtbp.inventory.repository.ShowRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
 import com.company.mtbp.inventory.specifications.SeatSpecifications;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class SeatService {
 
     private final SeatRepository seatRepository;
@@ -178,6 +180,13 @@ public class SeatService {
         return seatMapper.toDTOList(seats);
     }
 
+    public int updateShowForTheatre(Long theatreId, Long showId) {
+        Show show = showRepository.findById(showId)
+                .orElseThrow(() -> new RuntimeException("Show not found"));
+        int updatedRows = seatRepository.updateShowIdByTheatreId(theatreId, show);
+        log.debug("Updated rows: {}", updatedRows);
+        return updatedRows;
+    }
 
 }
 

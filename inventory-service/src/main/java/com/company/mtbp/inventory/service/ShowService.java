@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.service;
 
 import com.company.mtbp.inventory.dto.MovieDTO;
+import com.company.mtbp.inventory.dto.SeatDTO;
 import com.company.mtbp.inventory.dto.ShowDTO;
 import com.company.mtbp.inventory.entity.Movie;
 import com.company.mtbp.inventory.entity.Show;
@@ -11,6 +12,8 @@ import com.company.mtbp.inventory.repository.MovieRepository;
 import com.company.mtbp.inventory.repository.ShowRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
 import com.company.mtbp.inventory.specifications.ShowSpecifications;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -22,20 +25,24 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class ShowService {
 
     private final ShowRepository showRepository;
     private final MovieRepository movieRepository;
     private final ShowMapper showMapper;
     private final TheatreRepository theatreRepository;
+    private final SeatService seatService;
 
-    public ShowService(ShowRepository showRepository, MovieRepository movieRepository, ShowMapper showMapper, TheatreRepository theatreRepository) {
+    public ShowService(ShowRepository showRepository, MovieRepository movieRepository, ShowMapper showMapper, TheatreRepository theatreRepository, SeatService seatService) {
         this.showRepository = showRepository;
         this.movieRepository = movieRepository;
         this.showMapper = showMapper;
         this.theatreRepository = theatreRepository;
+        this.seatService = seatService;
     }
 
+    @Transactional
     public ShowDTO saveShow(ShowDTO showDTO) {
         Show show = showMapper.toEntity(showDTO);
 
@@ -52,6 +59,11 @@ public class ShowService {
         }
 
         Show savedShow = showRepository.save(show);
+
+        //List<SeatDTO> seatsList= seatService.getSeatsByTheatre(showDTO.getTheatreId());
+        int numberOfRowsUpdated = seatService.updateShowForTheatre(showDTO.getTheatreId(), savedShow.getId());
+        log.debug("Number Of Rows Updated : {}", numberOfRowsUpdated);
+
         return showMapper.toDTO(savedShow);
     }
 

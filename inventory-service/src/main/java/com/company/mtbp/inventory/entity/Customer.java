@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.List;
 
@@ -26,5 +27,6 @@ public class Customer {
     private String phone;
 
     @OneToMany(mappedBy = "customer")
+    @ToString.Exclude
     private List<Booking> bookings;
 }

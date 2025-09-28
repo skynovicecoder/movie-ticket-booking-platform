@@ -1,10 +1,7 @@
 package com.company.mtbp.inventory.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "booking_details")
@@ -20,14 +17,17 @@ public class BookingDetail {
 
     @ManyToOne
     @JoinColumn(name = "booking_id")
+    @ToString.Exclude
     private Booking booking;
 
     @ManyToOne
     @JoinColumn(name = "seat_id")
+    @ToString.Exclude
     private Seat seat;
 
     @ManyToOne
     @JoinColumn(name = "show_id")
+    @ToString.Exclude
     private Show show;
 
     private Double price;

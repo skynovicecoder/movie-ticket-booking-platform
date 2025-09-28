@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "seats")
@@ -24,9 +25,11 @@ public class Seat {
 
     @ManyToOne
     @JoinColumn(name = "theatre_id")
+    @ToString.Exclude
     private Theatre theatre;
 
     @ManyToOne
     @JoinColumn(name = "show_id")
+    @ToString.Exclude
     private Show show;
 }
