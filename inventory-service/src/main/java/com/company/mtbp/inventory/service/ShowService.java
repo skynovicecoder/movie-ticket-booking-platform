@@ -1,67 +1,98 @@
 package com.company.mtbp.inventory.service;
 
-import com.company.mtbp.inventory.entity.City;
+import com.company.mtbp.inventory.dto.MovieDTO;
+import com.company.mtbp.inventory.dto.ShowDTO;
 import com.company.mtbp.inventory.entity.Movie;
 import com.company.mtbp.inventory.entity.Show;
 import com.company.mtbp.inventory.entity.Theatre;
+import com.company.mtbp.inventory.exception.ResourceNotFoundException;
+import com.company.mtbp.inventory.mapper.ShowMapper;
+import com.company.mtbp.inventory.repository.MovieRepository;
 import com.company.mtbp.inventory.repository.ShowRepository;
+import com.company.mtbp.inventory.repository.TheatreRepository;
 import com.company.mtbp.inventory.specifications.ShowSpecifications;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class ShowService {
 
     private final ShowRepository showRepository;
+    private final MovieRepository movieRepository;
+    private final ShowMapper showMapper;
+    private final TheatreRepository theatreRepository;
 
-    public ShowService(ShowRepository showRepository) {
+    public ShowService(ShowRepository showRepository, MovieRepository movieRepository, ShowMapper showMapper, TheatreRepository theatreRepository) {
         this.showRepository = showRepository;
+        this.movieRepository = movieRepository;
+        this.showMapper = showMapper;
+        this.theatreRepository = theatreRepository;
     }
 
-    // Browse shows for a movie in selected theatres on a given date
-    /*public List<Show> getShows(Movie movie, List<Theatre> theatres, LocalDate date) {
-        return showRepository.findByMovieAndTheatreInAndShowDate(movie, theatres, date);
-    }*/
-    public List<Show> getShows(Movie movie, String cityName, LocalDate date) {
+    public ShowDTO saveShow(ShowDTO showDTO) {
+        Show show = showMapper.toEntity(showDTO);
+
+        if (showDTO.getMovieId() != null) {
+            Movie movie = movieRepository.findById(showDTO.getMovieId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Movie not found with id: " + showDTO.getMovieId()));
+            show.setMovie(movie);
+        }
+
+        if (showDTO.getTheatreId() != null) {
+            Theatre theatre = theatreRepository.findById(showDTO.getTheatreId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Theatre not found with id: " + showDTO.getTheatreId()));
+            show.setTheatre(theatre);
+        }
+
+        Show savedShow = showRepository.save(show);
+        return showMapper.toDTO(savedShow);
+    }
+
+    public ShowDTO patchShow(ShowDTO showDTO, Map<String, Object> updates) {
+        updates.forEach((key, value) -> {
+            try {
+                Field field = ShowDTO.class.getDeclaredField(key);
+                field.setAccessible(true);
+
+                if (field.getType().equals(LocalDate.class) && value instanceof String) {
+                    field.set(showDTO, LocalDate.parse((String) value));
+                } else if (field.getType().equals(LocalTime.class) && value instanceof String) {
+                    field.set(showDTO, LocalTime.parse((String) value));
+                } else {
+                    field.set(showDTO, value);
+                }
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new RuntimeException("Failed to update field: " + key, e);
+            }
+        });
+
+        return saveShow(showDTO);
+    }
+
+    public List<ShowDTO> getShows(MovieDTO movieDTO, String cityName, LocalDate date) {
+        Movie movie = movieDTO != null ? movieRepository.findById(movieDTO.getId()).orElse(null) : null;
+
         Specification<Show> spec = ShowSpecifications.byMovie(movie)
                 .and(ShowSpecifications.byCity(cityName))
                 .and(ShowSpecifications.byDate(date));
 
-        return showRepository.findAll(spec);
+        List<Show> shows = showRepository.findAll(spec);
+
+        return showMapper.toDTOList(shows);
     }
 
-    // Get a show by its ID
-    public Optional<Show> getShowById(Long id) {
-        return showRepository.findById(id);
+    public Optional<ShowDTO> getShowById(Long id) {
+        return showRepository.findById(id)
+                .map(showMapper::toDTO);
     }
 
-    // Browse shows by movie and city on a specific date
-    public List<Show> getShowsByMovieAndCity(Long movieId, City city, LocalDate date) {
-        return showRepository.findByMovieIdAndTheatre_CityAndShowDate(movieId, city, date);
-    }
-
-    // Browse shows in a theatre on a specific date
-    public List<Show> getShowsByTheatreAndDate(Theatre theatre, LocalDate date) {
-        return showRepository.findByTheatreAndShowDate(theatre, date);
-    }
-
-    // Browse afternoon shows for a given date
-    public List<Show> getAfternoonShows(LocalDate date) {
-        return showRepository.findByShowDateAndStartTimeBetween(date, LocalTime.NOON, LocalTime.of(16, 0));
-    }
-
-    // Create or update a show
-    public Show saveShow(Show show) {
-        return showRepository.save(show);
-    }
-
-    // Delete a show by ID
     public void deleteShow(Long showId) {
         showRepository.deleteById(showId);
     }

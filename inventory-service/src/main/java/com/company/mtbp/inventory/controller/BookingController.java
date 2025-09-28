@@ -1,11 +1,14 @@
 package com.company.mtbp.inventory.controller;
 
-import com.company.mtbp.inventory.entity.Booking;
-import com.company.mtbp.inventory.entity.Customer;
-import com.company.mtbp.inventory.entity.Show;
+import com.company.mtbp.inventory.dto.BookingDTO;
+import com.company.mtbp.inventory.dto.CustomerDTO;
+import com.company.mtbp.inventory.dto.ShowDTO;
+import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.service.BookingService;
 import com.company.mtbp.inventory.service.CustomerService;
 import com.company.mtbp.inventory.service.ShowService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,15 +28,21 @@ public class BookingController {
     }
 
     @PostMapping
-    public Booking bookTickets(@RequestParam Long customerId,
-                               @RequestParam Long showId,
-                               @RequestBody List<Long> seatIds) {
-        Customer customer = customerService.getCustomerById(customerId)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+    public ResponseEntity<BookingDTO> bookTickets(@RequestParam Long customerId,
+                                                  @RequestParam Long showId,
+                                                  @RequestBody List<Long> seatIds) {
+        if (seatIds == null || seatIds.isEmpty()) {
+            throw new ResourceNotFoundException("Seats selection is mandatory");
+        }
 
-        Show show = showService.getShowById(showId)
-                .orElseThrow(() -> new RuntimeException("Show not found"));
+        CustomerDTO customerDto = customerService.getCustomerById(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
 
-        return bookingService.bookTickets(customer, show, seatIds);
+        ShowDTO showDto = showService.getShowById(showId)
+                .orElseThrow(() -> new ResourceNotFoundException("Show not found with ID: " + showId));
+
+        BookingDTO bookingDto = bookingService.bookTickets(customerDto, showDto, seatIds);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(bookingDto);
     }
 }

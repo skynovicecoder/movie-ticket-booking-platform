@@ -31,7 +31,7 @@ public class Initialization {
         Theatre theatreObj = new Theatre();
         theatreObj.setName("In-orbit Hyderabad");
         theatreObj.setAddress("Hi-Tech City, Hyderabad");
-        theatreObj.setTotalSeats(200);
+        theatreObj.setTotalSeats(10);
         theatreObj.setCity(cityObj);
         theatreRepository.save(theatreObj);
 
@@ -47,19 +47,19 @@ public class Initialization {
         Theatre theatre1 = new Theatre();
         theatre1.setName("Cineplex Mumbai Central");
         theatre1.setAddress("123 Central Street, Mumbai");
-        theatre1.setTotalSeats(200);
+        theatre1.setTotalSeats(10);
         theatre1.setCity(city1);
 
         Theatre theatre2 = new Theatre();
         theatre2.setName("IMAX Mumbai");
         theatre2.setAddress("456 Marine Drive, Mumbai");
-        theatre2.setTotalSeats(150);
+        theatre2.setTotalSeats(10);
         theatre2.setCity(city1);
 
         Theatre theatre3 = new Theatre();
         theatre3.setName("Pune Galaxy");
         theatre3.setAddress("789 FC Road, Pune");
-        theatre3.setTotalSeats(180);
+        theatre3.setTotalSeats(10);
         theatre3.setCity(city2);
 
         theatreRepository.saveAll(Arrays.asList(theatre1, theatre2, theatre3));

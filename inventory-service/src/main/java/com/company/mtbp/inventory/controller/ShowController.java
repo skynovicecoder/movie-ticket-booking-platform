@@ -1,17 +1,19 @@
 package com.company.mtbp.inventory.controller;
 
-import com.company.mtbp.inventory.entity.Movie;
-import com.company.mtbp.inventory.entity.Show;
+import com.company.mtbp.inventory.dto.MovieDTO;
+import com.company.mtbp.inventory.dto.ShowDTO;
+import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.service.MovieService;
 import com.company.mtbp.inventory.service.ShowService;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Field;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/shows")
@@ -25,55 +27,50 @@ public class ShowController {
         this.movieService = movieService;
     }
 
-    // Browse shows by movie, city, and date
-    @GetMapping("/browse")
-    public List<Show> browseShows(@RequestParam(required = false) String movieTitle,
-                                  @RequestParam(required = false) String cityName,
-                                  @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        Movie movie = null;
-        if (movieTitle != null) {
-            movie = movieService.getMovieByTitle(movieTitle)
-                    .orElseThrow(() -> new RuntimeException("Movie not found"));
-        }
-
-        return showService.getShows(movie, cityName, date);
+    @PostMapping
+    public ResponseEntity<ShowDTO> createShow(@RequestBody ShowDTO showDTO) {
+        ShowDTO savedShow = showService.saveShow(showDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedShow);
     }
 
-    // Create a show (theatre admin)
-    @PostMapping
-    public Show createShow(@RequestBody Show show) {
-        return showService.saveShow(show);
+    @GetMapping("/browse")
+    public ResponseEntity<List<ShowDTO>> browseShows(@RequestParam(required = false) String movieTitle,
+                                                     @RequestParam(required = false) String cityName,
+                                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        MovieDTO movieDto = null;
+        if (movieTitle != null) {
+            movieDto = movieService.getMovieByTitle(movieTitle)
+                    .orElseThrow(() -> new ResourceNotFoundException("Movie not found with title: " + movieTitle));
+        }
+
+        List<ShowDTO> showsDto = showService.getShows(movieDto, cityName, date);
+        if (showsDto.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(showsDto);
     }
 
     @PatchMapping("/update/{showId}")
-    public Show patchShow(@PathVariable("showId") Long showId, @RequestBody Map<String, Object> updates) {
-        Show existingShow = showService.getShowById(showId)
-                .orElseThrow(() -> new RuntimeException("Show not found with id: " + showId));
+    public ResponseEntity<ShowDTO> patchShow(@PathVariable("showId") Long showId, @RequestBody Map<String, Object> updates) {
+        ShowDTO existingShow = showService.getShowById(showId)
+                .orElseThrow(() -> new ResourceNotFoundException("Show not found with id: " + showId));
 
-        updates.forEach((key, value) -> {
-            try {
-                Field field = Show.class.getDeclaredField(key);
-                field.setAccessible(true);
-
-                // Handle conversion for LocalDate and LocalTime if needed
-                if (field.getType().equals(LocalDate.class) && value instanceof String) {
-                    field.set(existingShow, LocalDate.parse((String) value));
-                } else if (field.getType().equals(LocalTime.class) && value instanceof String) {
-                    field.set(existingShow, LocalTime.parse((String) value));
-                } else {
-                    field.set(existingShow, value);
-                }
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException("Failed to update field: " + key, e);
-            }
-        });
-
-        return showService.saveShow(existingShow);
+        ShowDTO updatedShow = showService.patchShow(existingShow, updates);
+        return ResponseEntity.ok(updatedShow);
     }
 
-    // Delete show
+    @GetMapping("/{id}")
+    public ResponseEntity<ShowDTO> getShowById(@PathVariable Long id) {
+        Optional<ShowDTO> optionalShow = showService.getShowById(id);
+
+        return optionalShow
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{showId}")
-    public void deleteShow(@PathVariable("showId") Long showId) {
+    public ResponseEntity<Void> deleteShow(@PathVariable("showId") Long showId) {
         showService.deleteShow(showId);
+        return ResponseEntity.noContent().build();
     }
 }

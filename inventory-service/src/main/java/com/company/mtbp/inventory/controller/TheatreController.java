@@ -1,13 +1,11 @@
 package com.company.mtbp.inventory.controller;
 
-import com.company.mtbp.inventory.entity.City;
-import com.company.mtbp.inventory.entity.Theatre;
-import com.company.mtbp.inventory.repository.CityRepository;
+import com.company.mtbp.inventory.dto.TheatreDTO;
 import com.company.mtbp.inventory.service.TheatreService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,67 +15,51 @@ import java.util.Optional;
 public class TheatreController {
 
     private final TheatreService theatreService;
-    private final CityRepository cityRepository;;
 
-    public TheatreController(TheatreService theatreService, CityRepository cityRepository) {
+    public TheatreController(TheatreService theatreService) {
         this.theatreService = theatreService;
-        this.cityRepository = cityRepository;
     }
 
-    // Create a new theatre
     @PostMapping
-    public Theatre createTheatre(@RequestBody Theatre theatre) {
-        City cityObj = theatre.getCity();
-        if(cityObj.getId()==null) {
-            String cityName = cityObj.getName();
-            Optional<City> obj = cityRepository.findByName(cityName);
-            cityObj.setId(obj.get().getId());
-        }
-        return theatreService.saveTheatre(theatre);
+    public ResponseEntity<TheatreDTO> createTheatre(@RequestBody TheatreDTO theatreDTO) {
+        TheatreDTO savedTheatre = theatreService.saveTheatre(theatreDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedTheatre);
     }
 
-    // Patch / update theatre fields dynamically
     @PatchMapping("/update/{id}")
-    public ResponseEntity<Theatre> patchTheatre(@PathVariable("id") Long id,
-                                                @RequestBody Map<String, Object> updates) {
-        Optional<Theatre> optionalTheatre = theatreService.getTheatreById(id);
+    public ResponseEntity<TheatreDTO> patchTheatre(@PathVariable("id") Long id,
+                                                   @RequestBody Map<String, Object> updates) {
+        Optional<TheatreDTO> optionalTheatre = theatreService.getTheatreById(id);
         if (optionalTheatre.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-
-        Theatre theatre = optionalTheatre.get();
-
-        updates.forEach((key, value) -> {
-            try {
-                Field field = Theatre.class.getDeclaredField(key);
-                field.setAccessible(true);
-
-                // Handle special types if needed
-                if (field.getType().equals(Integer.class) && value instanceof Number) {
-                    field.set(theatre, ((Number) value).intValue());
-                } else {
-                    field.set(theatre, value);
-                }
-
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                System.out.println("Invalid field: " + key);
-            }
-        });
-
-        Theatre updatedTheatre = theatreService.saveTheatre(theatre);
+        TheatreDTO theatre = optionalTheatre.get();
+        TheatreDTO updatedTheatre = theatreService.patchTheatre(theatre, updates);
         return ResponseEntity.ok(updatedTheatre);
     }
 
-    // Get all theatres
     @GetMapping
-    public List<Theatre> getAllTheatres() {
-        return theatreService.getAllTheatres();
+    public ResponseEntity<List<TheatreDTO>> getAllTheatres() {
+        List<TheatreDTO> theatres = theatreService.getAllTheatres();
+        if (theatres.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(theatres);
     }
 
-    // Get theatre by ID
     @GetMapping("/{id}")
-    public Theatre getTheatreById(@PathVariable("id") Long id) {
-        return theatreService.getTheatreById(id)
-                .orElseThrow(() -> new RuntimeException("Theatre not found"));
+    public ResponseEntity<TheatreDTO> getTheatreById(@PathVariable Long id) {
+        Optional<TheatreDTO> theatre = theatreService.getTheatreById(id);
+        return theatre.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/city/{cityName}")
+    public ResponseEntity<List<TheatreDTO>> getTheatresByCity(@PathVariable String cityName) {
+        List<TheatreDTO> theatres = theatreService.getTheatresByCity(cityName);
+        if (theatres.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(theatres);
     }
 }

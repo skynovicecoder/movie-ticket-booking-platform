@@ -1,6 +1,13 @@
 package com.company.mtbp.inventory.service;
 
+import com.company.mtbp.inventory.dto.BookingDTO;
+import com.company.mtbp.inventory.dto.CustomerDTO;
+import com.company.mtbp.inventory.dto.ShowDTO;
 import com.company.mtbp.inventory.entity.*;
+import com.company.mtbp.inventory.exception.BadRequestException;
+import com.company.mtbp.inventory.mapper.BookingMapper;
+import com.company.mtbp.inventory.mapper.CustomerMapper;
+import com.company.mtbp.inventory.mapper.ShowMapper;
 import com.company.mtbp.inventory.repository.BookingDetailRepository;
 import com.company.mtbp.inventory.repository.BookingRepository;
 import com.company.mtbp.inventory.repository.SeatRepository;
@@ -16,24 +23,33 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final BookingDetailRepository bookingDetailRepository;
     private final SeatRepository seatRepository;
+    private final CustomerMapper customerMapper;
+    private final ShowMapper showMapper;
+    private final BookingMapper bookingMapper;
 
     public BookingService(BookingRepository bookingRepository,
                           BookingDetailRepository bookingDetailRepository,
-                          SeatRepository seatRepository) {
+                          SeatRepository seatRepository, CustomerMapper customerMapper, ShowMapper showMapper, BookingMapper bookingMapper) {
         this.bookingRepository = bookingRepository;
         this.bookingDetailRepository = bookingDetailRepository;
         this.seatRepository = seatRepository;
+        this.customerMapper = customerMapper;
+        this.showMapper = showMapper;
+        this.bookingMapper = bookingMapper;
     }
 
     @Transactional
-    public Booking bookTickets(Customer customerObj, Show showObj, List<Long> seatIds) {
+    public BookingDTO bookTickets(CustomerDTO CustomerDto, ShowDTO showDto, List<Long> seatIds) {
+        Customer customerObj = customerMapper.toEntity(CustomerDto);
+        Show showObj = showMapper.toEntity(showDto);
+
         // Fetch seats
         List<Seat> seats = seatRepository.findAllById(seatIds);
 
         // Check availability
         for (Seat seatObj : seats) {
             if (!seatObj.getAvailable()) {
-                throw new RuntimeException("Seat " + seatObj.getSeatNumber() + " is not available");
+                throw new BadRequestException("Seat " + seatObj.getSeatNumber() + " is not available");
             }
         }
 
@@ -74,6 +90,6 @@ public class BookingService {
             bookingDetailRepository.save(detail);
         }
 
-        return booking;
+        return bookingMapper.toDTO(booking);
     }
 }
