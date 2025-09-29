@@ -57,6 +57,12 @@ public class BookingController {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookingDto);
     }
 
+    @PutMapping("/{bookingId}/cancel")
+    public ResponseEntity<BookingDTO> cancelBooking(@PathVariable Long bookingId) {
+        BookingDTO cancelledBooking = bookingService.cancelBooking(bookingId);
+        return ResponseEntity.ok(cancelledBooking);
+    }
+
     private BookingContextValidation validateCustomerAndShow(Long customerId, Long showId) {
         if (customerId == null || customerId == 0) {
             throw new ResourceNotFoundException("Customer not found with ID: " + customerId);
