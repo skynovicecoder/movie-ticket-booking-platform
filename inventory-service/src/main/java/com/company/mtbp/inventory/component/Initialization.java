@@ -5,13 +5,16 @@ import com.company.mtbp.inventory.repository.*;
 import com.company.mtbp.inventory.service.TheatreService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+@DependsOn({"roleInitialization", "discountRulesInitialization"})
 @Component
 @RequiredArgsConstructor
 @Profile("dev")
@@ -23,6 +26,7 @@ public class Initialization {
     private final SeatRepository seatRepository;
     private final TheatreService theatreService;
     private final CustomerRepository customerRepository;
+    private final RoleRepository roleRepository;
 
     @PostConstruct
     public void init() {
@@ -85,10 +89,14 @@ public class Initialization {
     }
 
     private void createCustomers() {
+        Role adminRole = roleRepository.findByName("ADMIN").orElseThrow();
+        Role customerRole = roleRepository.findByName("CUSTOMER").orElseThrow();
+        Role theatreOwnerRole = roleRepository.findByName("THEATRE_OWNER").orElseThrow();
+
         List<Customer> customers = List.of(
-                new Customer(null, "Gokhu San", "gokhu.san@dragonballz.com", "9876543210", null),
-                new Customer(null, "Naruto Uzimaki", "naruto.uzimaki@ninzawar.com", "9123456780", null),
-                new Customer(null, "Luffy D Monkey", "luffy.d.monkey@onepiece.com", "9988776655", null)
+                new Customer(null, "Gokhu San", "gokhu.san@dragonballz.com", "9876543210", null, Set.of(adminRole)),
+                new Customer(null, "Naruto Uzimaki", "naruto.uzimaki@ninzawar.com", "9123456780", null, Set.of(customerRole)),
+                new Customer(null, "Luffy D Monkey", "luffy.d.monkey@onepiece.com", "9988776655", null, Set.of(theatreOwnerRole))
         );
 
         customerRepository.saveAll(customers);
