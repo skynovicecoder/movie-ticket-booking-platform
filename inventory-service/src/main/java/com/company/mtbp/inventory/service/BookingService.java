@@ -6,6 +6,7 @@ import com.company.mtbp.inventory.dto.ShowDTO;
 import com.company.mtbp.inventory.entity.*;
 import com.company.mtbp.inventory.enums.DiscountType;
 import com.company.mtbp.inventory.exception.BadRequestException;
+import com.company.mtbp.inventory.exception.BookingAlreadyCancelledException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.BookingMapper;
 import com.company.mtbp.inventory.mapper.CustomerMapper;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class BookingService {
@@ -79,6 +81,37 @@ public class BookingService {
         bookingRepository.save(booking);
 
         return bookingMapper.toDTO(booking);
+    }
+
+    @Transactional
+    public BookingDTO cancelBooking(Long bookingId) {
+        Optional<Booking> optionalBooking = bookingRepository.findById(bookingId);
+
+        if (optionalBooking.isEmpty()) {
+            throw new ResourceNotFoundException("Booking not found with ID: " + bookingId);
+        }
+
+        Booking booking = optionalBooking.get();
+
+        if ("CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+            throw new BookingAlreadyCancelledException("Booking is already cancelled for booking ID: " + bookingId);
+        }
+
+        booking.setStatus("CANCELLED");
+
+        releaseAllSeats(booking.getBookingDetails());
+
+        bookingRepository.save(booking);
+
+        return bookingMapper.toDTO(booking);
+    }
+
+    private void releaseAllSeats(List<BookingDetail> bookingDetails) {
+        for (BookingDetail detail : bookingDetails) {
+            Seat seat = detail.getSeat();
+            seat.setAvailable(true);
+            seatRepository.save(seat);
+        }
     }
 
     private List<Seat> validateAndMarkSeats(List<Long> seatIds) {
