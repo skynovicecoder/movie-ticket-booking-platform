@@ -22,6 +22,14 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
       - name: Run OWASP Dependency Check (Quick Mode)
         if: github.event_name == 'pull_request'
         run: mvn org.owasp:dependency-check-maven:check -DskipProvidedScope=true -DskipTestScope=true
