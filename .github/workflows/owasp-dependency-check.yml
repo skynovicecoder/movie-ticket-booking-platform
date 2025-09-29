@@ -12,9 +12,6 @@ jobs:
   dependency-check:
     runs-on: ubuntu-latest
 
-    env:
-      NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,8 +32,8 @@ jobs:
 
       - name: Run OWASP Dependency Check (Quick Mode)
         if: github.event_name == 'pull_request'
-        run: mvn org.owasp:dependency-check-maven:check -Dnvd.apiKey=${NVD_API_KEY} -DskipProvidedScope=true -DskipTestScope=true
+        run: mvn org.owasp:dependency-check-maven:check -Dnvd.apiKey=${{ secrets.NVD_API_KEY }} -DskipProvidedScope=true -DskipTestScope=true
 
       - name: Run OWASP Dependency Check (Full Scan)
         if: github.ref == 'refs/heads/main'
-        run: mvn org.owasp:dependency-check-maven:check -Dnvd.apiKey=${NVD_API_KEY}
+        run: mvn org.owasp:dependency-check-maven:check -Dnvd.apiKey=${{ secrets.NVD_API_KEY }}
