@@ -6,19 +6,20 @@ import com.company.mtbp.inventory.enums.DiscountType;
 import com.company.mtbp.inventory.repository.DiscountRulesRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class DiscountRulesInitialization {
 
     private final DiscountRulesRepository discountRulesRepository;
 
     @PostConstruct
     public void init() {
-
         if (discountRulesRepository.count() == 0) {
             DiscountRules thirdTicket = new DiscountRules();
             thirdTicket.setName("Third Ticket Discount");
@@ -37,7 +38,7 @@ public class DiscountRulesInitialization {
             afternoonShow.setActive(true);
 
             discountRulesRepository.saveAll(List.of(thirdTicket, afternoonShow));
-            System.out.println("Discount rules initialized successfully!");
+            log.info("Discount rules initialized successfully...!!!");
         }
     }
 }

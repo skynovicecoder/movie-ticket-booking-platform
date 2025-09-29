@@ -58,7 +58,7 @@ public class TheatreService {
         return theatreMapper.toDTO(savedTheatre);
     }
 
-    private List<Seat> prepareSeatsForTheatre(Theatre theatre, int totalSeats) {
+    public List<Seat> prepareSeatsForTheatre(Theatre theatre, int totalSeats) {
         List<Seat> seats = new ArrayList<>();
 
         int vipCount = (int) Math.ceil(totalSeats * 0.10);
