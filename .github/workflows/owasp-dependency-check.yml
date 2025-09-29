@@ -30,7 +30,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Run OWASP Dependency Check
+      - name: Run OWASP Dependency Check (Quick Mode)
+        if: github.event_name == 'pull_request'
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
-        run: mvn org.owasp:dependency-check-maven:check
+        run: mvn org.owasp:dependency-check-maven:check -Dnvd.apiKey=${{ secrets.NVD_API_KEY }} -DskipProvidedScope=true -DskipTestScope=true
+
+      - name: Run OWASP Dependency Check (Full Scan)
+        if: github.ref == 'refs/heads/main'
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: mvn org.owasp:dependency-check-maven:check -Dnvd.apiKey=${{ secrets.NVD_API_KEY }}
