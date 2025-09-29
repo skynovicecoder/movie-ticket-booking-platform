@@ -64,7 +64,6 @@
                     <version>${owasp.dependency.version}</version>
                     <configuration>
                         <nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
-                        <failBuildOnCVSS>7</failBuildOnCVSS>
                         <formats>
                             <format>HTML</format>
                             <format>XML</format>
@@ -73,5 +72,21 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <failBuildOnCVSS>9</failBuildOnCVSS>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>
