@@ -16,13 +16,11 @@ public class BookingDTO {
 
     private Long id;
 
-    // Customer Info
     private Long customerId;
-    private String customerName;   // optional, just for display
+    private String customerName;
 
-    // Show Info
     private Long showId;
-    private LocalDateTime showDateTime; // optional: derived from Show.startTime + date
+    private LocalDateTime showDateTime;
 
     private LocalDateTime bookingTime;
 
@@ -30,6 +28,5 @@ public class BookingDTO {
 
     private String status;  // BOOKED, CANCELLED
 
-    // List of booking detail IDs or seat numbers
     private List<Long> bookingDetailIds;
 }

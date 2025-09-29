@@ -28,7 +28,6 @@ public interface BookingMapper {
 
     List<BookingDTO> toDTOList(List<Booking> bookings);
 
-    // Custom method to map bookingDetails -> IDs
     default List<Long> mapBookingDetails(List<BookingDetail> details) {
         if (details == null) return null;
         return details.stream()

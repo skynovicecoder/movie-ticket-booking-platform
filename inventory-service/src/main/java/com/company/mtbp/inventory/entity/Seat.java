@@ -17,7 +17,7 @@ public class Seat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String seatNumber; // e.g., A1, B2
+    private String seatNumber; // Example R1, P1, V1
 
     private String seatType; // REGULAR, PREMIUM, VIP
 

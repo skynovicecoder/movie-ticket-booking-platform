@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SeatDTO {
     private Long id;
-    private String seatNumber;   // e.g., A1, B2
+    private String seatNumber;   // Example: R1, P1, V1
     private String seatType;     // REGULAR, PREMIUM, VIP
     private Boolean available;
 
     private Long theatreId;
-    private String theatreName;  // optional, if you want to show theatre name
+    private String theatreName;
 
     private Long showId;
 }
