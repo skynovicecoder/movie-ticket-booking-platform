@@ -101,8 +101,17 @@ Swagger/OpenAPI endpoints can be added for each microservice.
 
 Example (once service is running):
 
-http://localhost:8081/swagger-ui.html
-http://localhost:8082/swagger-ui.html
+http://localhost:8083/swagger-ui.html
+http://localhost:8083/v3/api-docs
+
+Prometheus metrics:
+http://localhost:8083/actuator/prometheus
+
+Health endpoint:
+http://localhost:8083/actuator/health
+
+All available actuator endpoints:
+http://localhost:8083/actuator
 
 🛠 Features
 

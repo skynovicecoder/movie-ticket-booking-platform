@@ -4,5 +4,23 @@ spring:
   application:
     name: mtbp.inventory
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: alpha
+    tagsSorter: alpha
+    display-request-duration: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,httptrace
+  endpoint:
+    health:
+      show-details: always
+
 server:
   port: 8083
