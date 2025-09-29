@@ -6,6 +6,7 @@ import com.company.mtbp.inventory.dto.ShowDTO;
 import com.company.mtbp.inventory.entity.*;
 import com.company.mtbp.inventory.enums.DiscountType;
 import com.company.mtbp.inventory.exception.BadRequestException;
+import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.BookingMapper;
 import com.company.mtbp.inventory.mapper.CustomerMapper;
 import com.company.mtbp.inventory.mapper.ShowMapper;
@@ -44,153 +45,72 @@ public class BookingService {
         this.discountRulesRepository = discountRulesRepository;
     }
 
-    /*
     @Transactional
-    public BookingDTO bookTickets(CustomerDTO CustomerDto, ShowDTO showDto, List<Long> seatIds) {
-        Customer customerObj = customerMapper.toEntity(CustomerDto);
-        Show showObj = showMapper.toEntity(showDto);
-
-        List<Seat> seats = seatRepository.findAllById(seatIds);
-
-        for (Seat seatObj : seats) {
-            if (!seatObj.getAvailable()) {
-                throw new BadRequestException("Seat " + seatObj.getSeatNumber() + " is not available");
-            }
-        }
-
-        seats.forEach(seat -> seat.setAvailable(false));
-        seatRepository.saveAll(seats);
-
-        double total = 0;
-        for (int i = 0; i < seats.size(); i++) {
-            double price = showObj.getPricePerTicket();
-            double discount = 0;
-            if (i == 2) discount += 0.5 * price;
-            if (showObj.getStartTime().isAfter(LocalTime.NOON) && showObj.getStartTime().isBefore(LocalTime.of(16, 0))) {
-                discount += 0.2 * price;
-            }
-            total += price - discount;
-        }
-
-        Booking booking = Booking.builder()
-                .customer(customerObj)
-                .show(showObj)
-                .bookingTime(java.time.LocalDateTime.now())
-                .status("BOOKED")
-                .totalAmount(total)
-                .build();
-        booking = bookingRepository.save(booking);
-
-        for (Seat seatObj : seats) {
-            BookingDetail detail = BookingDetail.builder()
-                    .booking(booking)
-                    .seat(seatObj)
-                    .price(showObj.getPricePerTicket())
-                    .discountApplied(0.0)
-                    .show(showObj)
-                    .build();
-            bookingDetailRepository.save(detail);
-        }
-
-        return bookingMapper.toDTO(booking);
-    }*/
-    /*@Transactional
     public BookingDTO bookTickets(CustomerDTO customerDto, ShowDTO showDto, List<Long> seatIds) {
         Customer customerObj = customerMapper.toEntity(customerDto);
         Show showObj = showMapper.toEntity(showDto);
 
-        List<Seat> seats = seatRepository.findAllById(seatIds);
+        List<Seat> seats = validateAndMarkSeats(seatIds);
 
-        for (Seat seatObj : seats) {
-            if (!seatObj.getAvailable()) {
-                throw new BadRequestException("Seat " + seatObj.getSeatNumber() + " is not available");
-            }
-        }
+        Booking booking = createBooking(customerObj, showObj);
 
-        seats.forEach(seat -> seat.setAvailable(false));
-        seatRepository.saveAll(seats);
-
-        Booking booking = Booking.builder()
-                .customer(customerObj)
-                .show(showObj)
-                .bookingTime(java.time.LocalDateTime.now())
-                .status("BOOKED")
-                .totalAmount(0.0)
-                .build();
-        booking = bookingRepository.save(booking);
-
-        double total = 0.0;
-        int index = 0;
-
-        for (Seat seatObj : seats) {
-            double price = showObj.getPricePerTicket();
-            double discount = 0.0;
-
-            if (index == 2) {
-                discount += 0.5 * price;
-            }
-
-            if (showObj.getStartTime().isAfter(LocalTime.NOON)
-                    && showObj.getStartTime().isBefore(LocalTime.of(16, 0))) {
-                discount += 0.2 * price;
-            }
-
-            double finalPrice = price - discount;
-            total += finalPrice;
-
-            BookingDetail detail = BookingDetail.builder()
-                    .booking(booking)
-                    .seat(seatObj)
-                    .price(price)
-                    .discountApplied(discount)
-                    .show(showObj)
-                    .build();
-
-            bookingDetailRepository.save(detail);
-            index++;
-        }
+        double total = applyDiscountsAndSaveDetails(booking, showObj, seats);
 
         booking.setTotalAmount(total);
         bookingRepository.save(booking);
 
         return bookingMapper.toDTO(booking);
-    }*/
+    }
 
     @Transactional
-    public BookingDTO bookTickets(CustomerDTO customerDto, ShowDTO showDto, List<Long> seatIds) {
+    public BookingDTO bulkBookTickets(CustomerDTO customerDto, ShowDTO showDto, int numberOfTicketsReq) {
         Customer customerObj = customerMapper.toEntity(customerDto);
         Show showObj = showMapper.toEntity(showDto);
 
-        // Fetch seats
+        List<Long> seatIds = getSeatIds(numberOfTicketsReq);
+
+        List<Seat> seats = validateAndMarkSeats(seatIds);
+
+        Booking booking = createBooking(customerObj, showObj);
+
+        double total = applyDiscountsAndSaveDetails(booking, showObj, seats);
+
+        booking.setTotalAmount(total);
+        bookingRepository.save(booking);
+
+        return bookingMapper.toDTO(booking);
+    }
+
+    private List<Seat> validateAndMarkSeats(List<Long> seatIds) {
         List<Seat> seats = seatRepository.findAllById(seatIds);
 
-        // Check availability
         for (Seat seatObj : seats) {
             if (!seatObj.getAvailable()) {
                 throw new BadRequestException("Seat " + seatObj.getSeatNumber() + " is not available");
             }
         }
 
-        // Mark seats as booked
         seats.forEach(seat -> seat.setAvailable(false));
         seatRepository.saveAll(seats);
 
-        // Create Booking
+        return seats;
+    }
+
+    private Booking createBooking(Customer customer, Show show) {
         Booking booking = Booking.builder()
-                .customer(customerObj)
-                .show(showObj)
+                .customer(customer)
+                .show(show)
                 .bookingTime(java.time.LocalDateTime.now())
                 .status("BOOKED")
-                .totalAmount(0.0) // will update after applying discounts
+                .totalAmount(0.0)
                 .build();
-        booking = bookingRepository.save(booking);
+        return bookingRepository.save(booking);
+    }
 
-        // Fetch active discount rules
+    private double applyDiscountsAndSaveDetails(Booking booking, Show showObj, List<Seat> seats) {
         List<DiscountRules> rules = discountRulesRepository.findByActiveTrue();
-
         double total = 0.0;
 
-        // Apply discounts dynamically for each seat and create BookingDetail
         for (int i = 0; i < seats.size(); i++) {
             Seat seatObj = seats.get(i);
             double price = showObj.getPricePerTicket();
@@ -213,7 +133,6 @@ public class BookingService {
                             discount += applyDiscount(rule, price);
                         }
                     }
-                    // Add more condition types here if needed
                 }
             }
 
@@ -231,16 +150,31 @@ public class BookingService {
             bookingDetailRepository.save(detail);
         }
 
-        // Update total amount after applying all discounts
-        booking.setTotalAmount(total);
-        bookingRepository.save(booking);
-
-        return bookingMapper.toDTO(booking);
+        return total;
     }
 
     private double applyDiscount(DiscountRules rule, double price) {
         if (rule.getDiscount_type() == DiscountType.PERCENTAGE) return price * rule.getDiscount_value() / 100.0;
         else return rule.getDiscount_value();
+    }
+
+    private List<Long> getSeatIds(int numberOfTicketsReq) {
+        List<Seat> availableSeats = seatRepository.findByAvailableTrue();
+
+        if (availableSeats == null || availableSeats.isEmpty()) {
+            throw new ResourceNotFoundException("No available seats found");
+        }
+
+        if (availableSeats.size() < numberOfTicketsReq) {
+            throw new ResourceNotFoundException(
+                    "Only " + availableSeats.size() + " seats are available, but " + numberOfTicketsReq + " were requested"
+            );
+        }
+
+        return availableSeats.stream()
+                .limit(numberOfTicketsReq)
+                .map(Seat::getId)
+                .toList();
     }
 
 }
