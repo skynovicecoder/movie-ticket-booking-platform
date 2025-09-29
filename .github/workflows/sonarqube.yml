@@ -1,4 +1,4 @@
-name: Java Maven CI
+name: SonarQube Scan
 
 on:
   push:
@@ -9,12 +9,12 @@ on:
       - main
 
 jobs:
-  build:
-    name: Build Spring Boot App
+  sonar:
+    name: SonarQube Analysis
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK
@@ -31,8 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Build with Maven
-        run: mvn clean package -B
-
-      - name: Run Tests
-        run: mvn test -B
+      - name: Run SonarQube Scanner
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: mvn clean verify sonar:sonar -Dsonar.projectKey=${{ secrets.SONAR_PROJECT_KEY }} -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} -Dsonar.login=${{ secrets.SONAR_TOKEN }}
