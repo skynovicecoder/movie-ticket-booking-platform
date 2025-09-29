@@ -36,4 +36,6 @@ public interface SeatRepository extends JpaRepository<Seat, Long>, JpaSpecificat
     @Modifying
     @Query("UPDATE Seat s SET s.show = :show WHERE s.theatre.id = :theatreId")
     int updateShowIdByTheatreId(@Param("theatreId") Long theatreId, @Param("show") Show show);
+
+    List<Seat> findByAvailableTrue();
 }
