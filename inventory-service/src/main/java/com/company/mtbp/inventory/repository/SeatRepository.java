@@ -20,7 +20,6 @@ public interface SeatRepository extends JpaRepository<Seat, Long>, JpaSpecificat
 
     List<Seat> findByShow(Show show);
 
-    // Optional: simple convenience methods
     List<Seat> findByTheatreId(Long theatreId);
 
     List<Seat> findByTheatreIdAndId(Long theatreId, Long seatId);

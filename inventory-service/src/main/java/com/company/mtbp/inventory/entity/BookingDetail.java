@@ -32,6 +32,6 @@ public class BookingDetail {
 
     private Double price;
 
-    private Double discountApplied; // percentage or amount
+    private Double discountApplied;
 
 }

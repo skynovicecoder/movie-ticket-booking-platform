@@ -1,7 +1,6 @@
 package com.company.mtbp.inventory.service;
 
 import com.company.mtbp.inventory.dto.MovieDTO;
-import com.company.mtbp.inventory.dto.SeatDTO;
 import com.company.mtbp.inventory.dto.ShowDTO;
 import com.company.mtbp.inventory.entity.Movie;
 import com.company.mtbp.inventory.entity.Show;
@@ -60,7 +59,6 @@ public class ShowService {
 
         Show savedShow = showRepository.save(show);
 
-        //List<SeatDTO> seatsList= seatService.getSeatsByTheatre(showDTO.getTheatreId());
         int numberOfRowsUpdated = seatService.updateShowForTheatre(showDTO.getTheatreId(), savedShow.getId());
         log.debug("Number Of Rows Updated : {}", numberOfRowsUpdated);
 

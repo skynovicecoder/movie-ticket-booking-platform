@@ -18,7 +18,7 @@ public class DiscountRulesInitialization {
 
     @PostConstruct
     public void init() {
-        // Avoid duplicate insertion
+
         if (discountRulesRepository.count() == 0) {
             DiscountRules thirdTicket = new DiscountRules();
             thirdTicket.setName("Third Ticket Discount");
