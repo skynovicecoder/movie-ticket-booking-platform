@@ -1,4 +1,4 @@
-name: Java Maven CI
+name: OWASP Dependency Check
 
 on:
   push:
@@ -9,12 +9,11 @@ on:
       - main
 
 jobs:
-  build:
-    name: Build Spring Boot App
+  dependency-check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK
@@ -31,8 +30,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Build with Maven
-        run: mvn clean package -B
+      - name: Run OWASP Dependency Check (Quick Mode)
+        if: github.event_name == 'pull_request'
+        run: mvn org.owasp:dependency-check-maven:check -Dnvd.apiKey=${{ secrets.NVD_API_KEY }} -DskipProvidedScope=true -DskipTestScope=true
 
-      - name: Run Tests
-        run: mvn test -B
+      - name: Run OWASP Dependency Check (Full Scan)
+        if: github.ref == 'refs/heads/main'
+        run: mvn org.owasp:dependency-check-maven:check -Dnvd.apiKey=${{ secrets.NVD_API_KEY }}
