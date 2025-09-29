@@ -32,8 +32,8 @@ jobs:
 
       - name: Run OWASP Dependency Check (Quick Mode)
         if: github.event_name == 'pull_request'
-        run: mvn org.owasp:dependency-check-maven:check -DskipProvidedScope=true -DskipTestScope=true
+        run: mvn org.owasp:dependency-check-maven:check -Dnvd.apiKey=${NVD_API_KEY} -DskipProvidedScope=true -DskipTestScope=true
 
       - name: Run OWASP Dependency Check (Full Scan)
         if: github.ref == 'refs/heads/main'
-        run: mvn org.owasp:dependency-check-maven:check
+        run: mvn org.owasp:dependency-check-maven:check -Dnvd.apiKey=${NVD_API_KEY}
