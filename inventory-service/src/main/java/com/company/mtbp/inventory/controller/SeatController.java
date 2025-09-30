@@ -42,12 +42,12 @@ public class SeatController {
     }
 
     @GetMapping("/theatre")
-    public ResponseEntity<?> getSeats(
+    public ResponseEntity<List<SeatDTO>> getSeats(
             @RequestParam(required = false) Long theatreId,
             @RequestParam(required = false) String seatNumber,
             @RequestParam(required = false) Long seatId) {
 
-        Object result = seatService.getSeats(seatId, theatreId, seatNumber);
+        List<SeatDTO> result = seatService.getSeats(seatId, theatreId, seatNumber);
         return ResponseEntity.ok(result);
     }
 
