@@ -154,8 +154,7 @@ public class SeatService {
         if (filters.containsKey("seatId")) {
             Number seatIdNum = (Number) filters.get("seatId");
             Long seatId = seatIdNum.longValue();
-            spec = (spec == null ? SeatSpecifications.byId(seatId)
-                    : spec.and(SeatSpecifications.byId((Long) filters.get("seatId"))));
+            spec = SeatSpecifications.byId(seatId);
         }
         if (filters.containsKey("theatreId")) {
             Number theatreIdNum = (Number) filters.get("theatreId");
