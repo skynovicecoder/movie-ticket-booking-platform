@@ -35,12 +35,11 @@ class MovieControllerTest {
     private MovieController movieController;
 
     private MockMvc mockMvc;
-    private Faker faker;
     private MovieDTO sampleMovie;
 
     @BeforeEach
     void setup() {
-        faker = new Faker();
+        Faker faker = new Faker();
         mockMvc = MockMvcBuilders.standaloneSetup(movieController).build();
 
         sampleMovie = new MovieDTO();

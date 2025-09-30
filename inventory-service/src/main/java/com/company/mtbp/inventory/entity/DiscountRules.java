@@ -3,10 +3,7 @@ package com.company.mtbp.inventory.entity;
 import com.company.mtbp.inventory.enums.ConditionType;
 import com.company.mtbp.inventory.enums.DiscountType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
@@ -16,6 +13,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class DiscountRules {
 
     @Id

@@ -11,9 +11,6 @@ public class JsonUtils {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * Parse JSON string to Map<String, Object>
-     */
     public Map<String, Object> parseToMap(String json) {
         try {
             return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {
@@ -23,9 +20,6 @@ public class JsonUtils {
         }
     }
 
-    /**
-     * Parse JSON string to Map<String, String>
-     */
     public Map<String, String> parseToStringMap(String json) {
         try {
             return objectMapper.readValue(json, new TypeReference<Map<String, String>>() {
@@ -35,9 +29,6 @@ public class JsonUtils {
         }
     }
 
-    /**
-     * Parse JSON string to Map<String, Integer>
-     */
     public Map<String, Integer> parseToIntMap(String json) {
         try {
             return objectMapper.readValue(json, new TypeReference<Map<String, Integer>>() {

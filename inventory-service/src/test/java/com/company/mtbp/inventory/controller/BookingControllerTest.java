@@ -52,7 +52,6 @@ class BookingControllerTest {
     private BookingController bookingController;
 
     private MockMvc mockMvc;
-    private Faker faker;
 
     private CustomerDTO sampleCustomer;
     private ShowDTO sampleShow;
@@ -60,7 +59,7 @@ class BookingControllerTest {
 
     @BeforeEach
     void setup() {
-        faker = new Faker();
+        Faker faker = new Faker();
         mockMvc = MockMvcBuilders.standaloneSetup(bookingController).build();
 
         sampleCustomer = new CustomerDTO();

@@ -35,12 +35,11 @@ class CustomerControllerTest {
     private CustomerController customerController;
 
     private MockMvc mockMvc;
-    private Faker faker;
     private CustomerDTO sampleCustomer;
 
     @BeforeEach
     void setup() {
-        faker = new Faker();
+        Faker faker = new Faker();
         mockMvc = MockMvcBuilders.standaloneSetup(customerController).build();
 
         sampleCustomer = new CustomerDTO();

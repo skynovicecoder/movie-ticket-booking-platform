@@ -2,10 +2,7 @@ package com.company.mtbp.inventory.dto;
 
 import com.company.mtbp.inventory.enums.ConditionType;
 import com.company.mtbp.inventory.enums.DiscountType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Set;
 
@@ -13,6 +10,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class DiscountRulesDTO {
 
     private Long id;

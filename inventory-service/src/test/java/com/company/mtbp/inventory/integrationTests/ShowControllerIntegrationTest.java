@@ -51,11 +51,9 @@ class ShowControllerIntegrationTest {
     @MockitoBean
     private ShowRepository showRepository;
 
-    private Faker faker;
-
     @BeforeEach
     void setup() {
-        faker = new Faker();
+        Faker faker = new Faker();
     }
 
     @Test

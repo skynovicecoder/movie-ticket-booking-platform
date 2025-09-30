@@ -35,12 +35,11 @@ class CityControllerTest {
     private CityController cityController;
 
     private MockMvc mockMvc;
-    private Faker faker;
     private CityDTO sampleCity;
 
     @BeforeEach
     void setup() {
-        faker = new Faker();
+        Faker faker = new Faker();
         mockMvc = MockMvcBuilders.standaloneSetup(cityController).build();
 
         sampleCity = new CityDTO();

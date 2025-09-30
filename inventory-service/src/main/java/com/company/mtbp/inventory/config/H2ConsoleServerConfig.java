@@ -16,9 +16,9 @@ import java.sql.SQLException;
 @Profile("dev")
 public class H2ConsoleServerConfig {
     @Value("${spring.h2.console.port}")
-    private String h2Port;
+    String h2Port;
 
-    private Server webServer;
+    Server webServer;
 
     @EventListener(ContextRefreshedEvent.class)
     public void start() throws SQLException {
