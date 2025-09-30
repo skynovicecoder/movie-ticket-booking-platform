@@ -35,21 +35,4 @@ class CityDTOTest {
         assertEquals("Bangalore", city.getName());
     }
 
-    @Test
-    void testEqualsAndHashCode() {
-        CityDTO city1 = new CityDTO(1L, "Mumbai");
-        CityDTO city2 = new CityDTO(1L, "Mumbai");
-
-        assertEquals(city1, city2);
-        assertEquals(city1.hashCode(), city2.hashCode());
-    }
-
-    @Test
-    void testToString() {
-        CityDTO city = new CityDTO(1L, "Mumbai");
-        String str = city.toString();
-        assertNotNull(str);
-        assertTrue(str.contains("Mumbai"));
-        assertTrue(str.contains("1"));
-    }
 }

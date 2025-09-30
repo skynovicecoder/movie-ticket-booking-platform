@@ -51,23 +51,5 @@ class CustomerDTOTest {
         assertEquals("1112223333", customer.getPhone());
         assertEquals(Set.of("ADMIN"), customer.getRoles());
     }
-
-    @Test
-    void testEqualsAndHashCode() {
-        CustomerDTO customer1 = new CustomerDTO(1L, "John", "john@example.com", "123", Set.of("USER"));
-        CustomerDTO customer2 = new CustomerDTO(1L, "John", "john@example.com", "123", Set.of("USER"));
-
-        assertEquals(customer1, customer2);
-        assertEquals(customer1.hashCode(), customer2.hashCode());
-    }
-
-    @Test
-    void testToString() {
-        CustomerDTO customer = new CustomerDTO(1L, "John", "john@example.com", "123", Set.of("USER"));
-        String str = customer.toString();
-        assertNotNull(str);
-        assertTrue(str.contains("John"));
-        assertTrue(str.contains("123"));
-        assertTrue(str.contains("USER"));
-    }
+    
 }

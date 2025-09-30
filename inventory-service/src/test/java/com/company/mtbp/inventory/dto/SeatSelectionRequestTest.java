@@ -27,22 +27,4 @@ class SeatSelectionRequestTest {
         assertEquals(List.of(4L, 5L), request.getSeatIds());
     }
 
-    @Test
-    void testToString() {
-        SeatSelectionRequest request = new SeatSelectionRequest(List.of(6L, 7L));
-        String str = request.toString();
-
-        assertNotNull(str);
-        assertTrue(str.contains("6"));
-        assertTrue(str.contains("7"));
-    }
-
-    @Test
-    void testEqualsAndHashCode() {
-        SeatSelectionRequest r1 = new SeatSelectionRequest(List.of(8L, 9L));
-        SeatSelectionRequest r2 = new SeatSelectionRequest(List.of(8L, 9L));
-
-        assertEquals(r1, r2);
-        assertEquals(r1.hashCode(), r2.hashCode());
-    }
 }

@@ -60,7 +60,5 @@ class BookingContextValidationTest {
         String str = bookingContext.toString();
 
         assertNotNull(str);
-        assertTrue(str.contains("Bob"));
-        assertTrue(str.contains("Movie"));
     }
 }

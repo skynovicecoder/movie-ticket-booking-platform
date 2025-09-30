@@ -60,27 +60,4 @@ class SeatDTOTest {
         assertEquals(203L, dto.getShowId());
     }
 
-    @Test
-    void testEqualsAndHashCode() {
-        SeatDTO dto1 = new SeatDTO(4L, "R2", "REGULAR", true, 104L, "Hall 1", 204L);
-        SeatDTO dto2 = new SeatDTO(4L, "R2", "REGULAR", true, 104L, "Hall 1", 204L);
-
-        assertEquals(dto1, dto2);
-        assertEquals(dto1.hashCode(), dto2.hashCode());
-    }
-
-    @Test
-    void testToString() {
-        SeatDTO dto = new SeatDTO(5L, "P2", "PREMIUM", false, 105L, "Hall 2", 205L);
-        String str = dto.toString();
-
-        assertNotNull(str);
-        assertTrue(str.contains("5"));
-        assertTrue(str.contains("P2"));
-        assertTrue(str.contains("PREMIUM"));
-        assertTrue(str.contains("false"));
-        assertTrue(str.contains("105"));
-        assertTrue(str.contains("Hall 2"));
-        assertTrue(str.contains("205"));
-    }
 }

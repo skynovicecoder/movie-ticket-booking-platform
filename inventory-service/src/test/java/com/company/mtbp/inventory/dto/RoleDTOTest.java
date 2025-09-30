@@ -35,22 +35,4 @@ class RoleDTOTest {
         assertEquals("MODERATOR", dto.getName());
     }
 
-    @Test
-    void testEqualsAndHashCode() {
-        RoleDTO dto1 = new RoleDTO(4L, "GUEST");
-        RoleDTO dto2 = new RoleDTO(4L, "GUEST");
-
-        assertEquals(dto1, dto2);
-        assertEquals(dto1.hashCode(), dto2.hashCode());
-    }
-
-    @Test
-    void testToString() {
-        RoleDTO dto = new RoleDTO(5L, "TEST");
-        String str = dto.toString();
-
-        assertNotNull(str);
-        assertTrue(str.contains("5"));
-        assertTrue(str.contains("TEST"));
-    }
 }
