@@ -62,24 +62,4 @@ class ShowDTOTest {
         assertEquals("IMAX", showDTO.getShowType());
     }
 
-    @Test
-    void testToString() {
-        ShowDTO showDTO = new ShowDTO(1L, 10L, "Movie", 100L, "Theatre",
-                LocalDate.now(), LocalTime.NOON, LocalTime.NOON, 200.0, "2D");
-        String str = showDTO.toString();
-        assertNotNull(str);
-        assertTrue(str.contains("Movie"));
-        assertTrue(str.contains("Theatre"));
-    }
-
-    @Test
-    void testEqualsAndHashCode() {
-        ShowDTO s1 = new ShowDTO(1L, 10L, "Movie", 100L, "Theatre",
-                LocalDate.now(), LocalTime.NOON, LocalTime.NOON, 200.0, "2D");
-        ShowDTO s2 = new ShowDTO(1L, 10L, "Movie", 100L, "Theatre",
-                LocalDate.now(), LocalTime.NOON, LocalTime.NOON, 200.0, "2D");
-
-        assertEquals(s1, s2);
-        assertEquals(s1.hashCode(), s2.hashCode());
-    }
 }

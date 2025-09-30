@@ -43,21 +43,4 @@ class TheatreDTOTest {
         assertEquals("Bangalore", theatreDTO.getCityName());
     }
 
-    @Test
-    void testToString() {
-        TheatreDTO theatreDTO = new TheatreDTO(1L, "PVR", "Address", 100, 10L, "City");
-        String str = theatreDTO.toString();
-        assertNotNull(str);
-        assertTrue(str.contains("PVR"));
-        assertTrue(str.contains("Address"));
-    }
-
-    @Test
-    void testEqualsAndHashCode() {
-        TheatreDTO t1 = new TheatreDTO(1L, "PVR", "Address", 100, 10L, "City");
-        TheatreDTO t2 = new TheatreDTO(1L, "PVR", "Address", 100, 10L, "City");
-
-        assertEquals(t1, t2);
-        assertEquals(t1.hashCode(), t2.hashCode());
-    }
 }

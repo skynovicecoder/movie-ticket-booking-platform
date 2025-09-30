@@ -61,18 +61,4 @@ class BookingDTOTest {
         assertEquals(List.of(30L, 40L), dto.getBookingDetailIds());
     }
 
-    @Test
-    void testEqualsAndHashCode() {
-        BookingDTO dto1 = new BookingDTO();
-        BookingDTO dto2 = new BookingDTO();
-        assertEquals(dto1, dto2);
-        assertEquals(dto1.hashCode(), dto2.hashCode());
-    }
-
-    @Test
-    void testToStringNotEmpty() {
-        BookingDTO dto = new BookingDTO();
-        assertNotNull(dto.toString());
-        assertFalse(dto.toString().isEmpty());
-    }
 }

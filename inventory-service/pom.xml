@@ -157,9 +157,10 @@
                         </goals>
                         <configuration>
                             <excludes>
-                                <exclude>**/dto/*</exclude>
+                                <!--<exclude>**/dto/*</exclude>
                                 <exclude>**/record/*</exclude>
                                 <exclude>**/component/*</exclude>
+                                <exclude>**/entity/*</exclude>-->
                             </excludes>
                         </configuration>
                     </execution>
@@ -173,9 +174,10 @@
                         </goals>
                         <configuration>
                             <excludes>
-                                <exclude>**/dto/*</exclude>
+                                <!--<exclude>**/dto/*</exclude>
                                 <exclude>**/record/*</exclude>
                                 <exclude>**/component/*</exclude>
+                                <exclude>**/entity/*</exclude>-->
                             </excludes>
                         </configuration>
                     </execution>
