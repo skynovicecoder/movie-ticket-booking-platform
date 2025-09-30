@@ -11,6 +11,7 @@ import java.util.List;
 @Table(name = "shows")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class Show {

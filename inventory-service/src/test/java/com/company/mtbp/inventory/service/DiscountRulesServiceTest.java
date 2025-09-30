@@ -4,6 +4,8 @@ import com.company.mtbp.inventory.dto.DiscountRulesDTO;
 import com.company.mtbp.inventory.entity.City;
 import com.company.mtbp.inventory.entity.DiscountRules;
 import com.company.mtbp.inventory.entity.Theatre;
+import com.company.mtbp.inventory.enums.ConditionType;
+import com.company.mtbp.inventory.enums.DiscountType;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.DiscountRulesMapper;
@@ -181,5 +183,36 @@ class DiscountRulesServiceTest {
         List<DiscountRulesDTO> result = discountRulesService.getOffers(null, null);
 
         assertEquals(1, result.size());
+    }
+
+    @Test
+    void patchDiscount_updatesAllFieldTypesSuccessfully() {
+        when(discountRulesMapper.toEntity(sampleDiscountDTO)).thenReturn(sampleDiscount);
+        when(cityRepository.findAllById(any())).thenReturn(List.of(sampleCity));
+        when(theatreRepository.findAllById(any())).thenReturn(List.of(sampleTheatre));
+        when(discountRulesRepository.save(sampleDiscount)).thenReturn(sampleDiscount);
+        when(discountRulesMapper.toDTO(sampleDiscount)).thenReturn(sampleDiscountDTO);
+
+        Map<String, Object> updates = Map.of(
+                "name", "Super Saver",
+                "discountValue", 75.0,
+                "active", false,
+                "discountType", DiscountType.FIXED_AMOUNT,
+                "conditionType", ConditionType.CUSTOMER_TYPE,
+                "cityIds", List.of(1L, 2L),
+                "theatreIds", List.of(10L, 20L)
+        );
+
+        DiscountRulesDTO updated = discountRulesService.patchDiscount(sampleDiscountDTO, updates);
+
+        assertNotNull(updated);
+
+        assertEquals("Super Saver", updated.getName());
+        assertEquals(75.0, updated.getDiscountValue());
+        assertFalse(updated.getActive());
+        assertEquals(Set.of(1L, 2L), updated.getCityIds());
+        assertEquals(Set.of(10L, 20L), updated.getTheatreIds());
+
+        verify(discountRulesRepository).save(sampleDiscount);
     }
 }

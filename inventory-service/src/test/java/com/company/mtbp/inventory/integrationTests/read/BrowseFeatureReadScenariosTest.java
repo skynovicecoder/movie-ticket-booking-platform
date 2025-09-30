@@ -1,4 +1,4 @@
-package com.company.mtbp.inventory.integrationTests;
+package com.company.mtbp.inventory.integrationTests.read;
 
 import com.company.mtbp.inventory.entity.City;
 import com.company.mtbp.inventory.entity.Movie;
@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Slf4j
 @ActiveProfiles("test")
-class ShowControllerIntegrationTest {
+class BrowseFeatureReadScenariosTest {
 
     @Autowired
     private MockMvc mockMvc;
