@@ -10,6 +10,9 @@ import com.company.mtbp.inventory.repository.MovieRepository;
 import com.company.mtbp.inventory.repository.ShowRepository;
 import com.company.mtbp.inventory.service.MovieService;
 import com.company.mtbp.inventory.service.ShowService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.github.javafaker.Faker;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,13 +30,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,11 +68,28 @@ class ShowControllerTest {
 
     private MockMvc mockMvc;
     private Faker faker;
+    private ObjectMapper objectMapper;
+    private ShowDTO sampleShow;
+    private MovieDTO sampleMovie;
 
     @BeforeEach
     void setup() {
         faker = new Faker();
         mockMvc = MockMvcBuilders.standaloneSetup(showController).build();
+        objectMapper = new ObjectMapper();
+        objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        sampleMovie = new MovieDTO();
+        sampleMovie.setId(1L);
+        sampleMovie.setTitle("Interstellar");
+
+        sampleShow = new ShowDTO();
+        sampleShow.setId(100L);
+        sampleShow.setMovieTitle(sampleMovie.getTitle());
+        sampleShow.setShowDate(LocalDate.now());
+        sampleShow.setStartTime(LocalTime.of(18, 0));
     }
 
     @Test
@@ -174,5 +195,119 @@ class ShowControllerTest {
         assertThrows(ResourceNotFoundException.class, () -> {
             showController.browseShows(unknownTitle, null, null);
         });
+    }
+
+    @Test
+    void createShow_returnsCreatedShow() throws Exception {
+        Mockito.when(showService.saveShow(any(ShowDTO.class))).thenReturn(sampleShow);
+
+        mockMvc.perform(post("/api/shows")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleShow)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(sampleShow.getId()))
+                .andExpect(jsonPath("$.movieTitle").value(sampleShow.getMovieTitle()));
+    }
+
+    @Test
+    void browseShows_throwsWhenMovieNotFound() {
+        Mockito.when(movieService.getMovieByTitle("Unknown"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                showController.browseShows("Unknown", null, null)
+        );
+    }
+
+    @Test
+    void patchShow_updatesShow() throws Exception {
+        Mockito.when(showService.getShowById(100L)).thenReturn(Optional.of(sampleShow));
+
+        ShowDTO updated = new ShowDTO();
+        updated.setId(100L);
+        updated.setMovieTitle("Interstellar");
+        updated.setShowDate(LocalDate.now().plusDays(1));
+        updated.setStartTime(LocalTime.of(20, 0));
+
+        Mockito.when(showService.patchShow(eq(sampleShow), any(Map.class))).thenReturn(updated);
+
+        mockMvc.perform(patch("/api/shows/update/100")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"showDate\":\"" + LocalDate.now().plusDays(1) + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100));
+    }
+
+    @Test
+    void patchShow_throwsWhenNotFound() {
+        Mockito.when(showService.getShowById(999L)).thenReturn(Optional.empty());
+
+        Map<String, Object> updates = Map.of("showDate", "2025-01-01");
+
+        assertThrows(ResourceNotFoundException.class, () ->
+                showController.patchShow(999L, updates)
+        );
+    }
+
+    @Test
+    void getShowById_returnsShow() throws Exception {
+        Mockito.when(showService.getShowById(100L)).thenReturn(Optional.of(sampleShow));
+
+        mockMvc.perform(get("/api/shows/100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(100))
+                .andExpect(jsonPath("$.movieTitle").value("Interstellar"));
+    }
+
+    @Test
+    void getShowById_returnsNotFound() throws Exception {
+        Mockito.when(showService.getShowById(999L)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/shows/999"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteShow_returnsNoContent() throws Exception {
+        Mockito.doNothing().when(showService).deleteShow(100L);
+
+        mockMvc.perform(delete("/api/shows/100"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void create_Show_returns_CreatedShow() throws Exception {
+        Mockito.when(showService.saveShow(any(ShowDTO.class))).thenReturn(sampleShow);
+
+        mockMvc.perform(post("/api/shows")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sampleShow)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(sampleShow.getId()))
+                .andExpect(jsonPath("$.movieTitle").value(sampleShow.getMovieTitle()));
+    }
+
+    @Test
+    void browse_Shows_returns_Shows() throws Exception {
+        Mockito.when(movieService.getMovieByTitle("Interstellar")).thenReturn(Optional.of(sampleMovie));
+        Mockito.when(showService.getShows(eq(sampleMovie), eq("Mumbai"), any()))
+                .thenReturn(List.of(sampleShow));
+
+        mockMvc.perform(get("/api/shows/browse")
+                        .param("movieTitle", "Interstellar")
+                        .param("cityName", "Mumbai"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].movieTitle").value("Interstellar"));
+    }
+
+    @Test
+    void browse_Shows_returns_NoContent_when_NoShowsFound() throws Exception {
+        Mockito.when(movieService.getMovieByTitle("Interstellar")).thenReturn(Optional.of(sampleMovie));
+        Mockito.when(showService.getShows(eq(sampleMovie), any(), any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/shows/browse")
+                        .param("movieTitle", "Interstellar"))
+                .andExpect(status().isNoContent());
     }
 }

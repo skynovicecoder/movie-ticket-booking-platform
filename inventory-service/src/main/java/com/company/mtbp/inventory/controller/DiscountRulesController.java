@@ -50,4 +50,18 @@ public class DiscountRulesController {
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/offers")
+    public ResponseEntity<List<DiscountRulesDTO>> getOffers(
+            @RequestParam(required = false) Long cityId,
+            @RequestParam(required = false) Long theatreId) {
+
+        List<DiscountRulesDTO> offers = discountRulesService.getOffers(cityId, theatreId);
+
+        if (offers.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(offers);
+    }
 }

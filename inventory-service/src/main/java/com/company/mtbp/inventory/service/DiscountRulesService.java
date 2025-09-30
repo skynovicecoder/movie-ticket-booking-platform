@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -90,5 +91,39 @@ public class DiscountRulesService {
         });
 
         return saveDiscount(dto);
+    }
+
+    public List<DiscountRulesDTO> getOffers(Long cityId, Long theatreId) {
+        Set<DiscountRules> applicableDiscounts = new HashSet<>();
+
+        if (cityId != null) {
+            City city = cityRepository.findById(cityId).orElse(null);
+            if (city != null) {
+                applicableDiscounts.addAll(
+                        discountRulesRepository.findAll().stream()
+                                .filter(d -> d.getCities() != null && d.getCities().contains(city))
+                                .collect(Collectors.toSet())
+                );
+            }
+        }
+
+        if (theatreId != null) {
+            Theatre theatre = theatreRepository.findById(theatreId).orElse(null);
+            if (theatre != null) {
+                applicableDiscounts.addAll(
+                        discountRulesRepository.findAll().stream()
+                                .filter(d -> d.getTheatres() != null && d.getTheatres().contains(theatre))
+                                .collect(Collectors.toSet())
+                );
+            }
+        }
+
+        if (cityId == null && theatreId == null) {
+            applicableDiscounts.addAll(discountRulesRepository.findAll().stream()
+                    .filter(DiscountRules::getActive)
+                    .collect(Collectors.toSet()));
+        }
+
+        return discountRulesMapper.toDTOList(new ArrayList<>(applicableDiscounts));
     }
 }
