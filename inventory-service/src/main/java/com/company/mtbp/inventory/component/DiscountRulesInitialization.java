@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -28,6 +29,8 @@ public class DiscountRulesInitialization {
             thirdTicket.setConditionType(ConditionType.TICKET_INDEX);
             thirdTicket.setRule_condition("{\"index\":2}");
             thirdTicket.setActive(true);
+            thirdTicket.setCities(Set.of());
+            thirdTicket.setTheatres(Set.of());
 
             DiscountRules afternoonShow = new DiscountRules();
             afternoonShow.setName("Afternoon Show");
@@ -36,6 +39,8 @@ public class DiscountRulesInitialization {
             afternoonShow.setConditionType(ConditionType.SHOW_TIME);
             afternoonShow.setRule_condition("{\"from\":\"12:00\",\"to\":\"16:00\"}");
             afternoonShow.setActive(true);
+            afternoonShow.setCities(Set.of());
+            afternoonShow.setTheatres(Set.of());
 
             discountRulesRepository.saveAll(List.of(thirdTicket, afternoonShow));
             log.info("Discount rules initialized successfully...!!!");

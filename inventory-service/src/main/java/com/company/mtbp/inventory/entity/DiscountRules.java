@@ -3,15 +3,17 @@ package com.company.mtbp.inventory.entity;
 import com.company.mtbp.inventory.enums.ConditionType;
 import com.company.mtbp.inventory.enums.DiscountType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.Set;
 
 @Entity
 @Table(name = "discount_rules")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class DiscountRules {
 
     @Id
@@ -31,4 +33,20 @@ public class DiscountRules {
     private String rule_condition;   // JSON string describing the condition
 
     private Boolean active = true; // Flag to enable/disable rule without deleting
+
+    @ManyToMany
+    @JoinTable(
+            name = "discount_cities",
+            joinColumns = @JoinColumn(name = "discount_id"),
+            inverseJoinColumns = @JoinColumn(name = "city_id")
+    )
+    private Set<City> cities;
+
+    @ManyToMany
+    @JoinTable(
+            name = "discount_theatres",
+            joinColumns = @JoinColumn(name = "discount_id"),
+            inverseJoinColumns = @JoinColumn(name = "theatre_id")
+    )
+    private Set<Theatre> theatres;
 }
