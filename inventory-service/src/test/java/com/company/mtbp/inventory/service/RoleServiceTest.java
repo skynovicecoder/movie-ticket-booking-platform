@@ -4,12 +4,16 @@ import com.company.mtbp.inventory.dto.RoleDTO;
 import com.company.mtbp.inventory.entity.Role;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.RoleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -83,13 +87,18 @@ class RoleServiceTest {
 
     @Test
     void getAllRoles_success() {
-        when(roleRepository.findAll()).thenReturn(List.of(sampleRole));
+        Page<Role> rolePage = new PageImpl<>(List.of(sampleRole));
+        when(roleRepository.findAll(PageRequest.of(0, 10))).thenReturn(rolePage);
 
-        List<RoleDTO> result = roleService.getAllRoles();
+        PageResponse<RoleDTO> result = roleService.getAllRoles(0, 10);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("ADMIN", result.getFirst().getName());
+        assertEquals(1, result.getContent().size());
+        assertEquals("ADMIN", result.getContent().getFirst().getName());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(0, result.getPageNumber());
+        assertTrue(result.isLast());
     }
 
     @Test

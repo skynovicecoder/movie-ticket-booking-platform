@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.SeatDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.SeatService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +46,7 @@ class SeatControllerTest {
 
         sampleSeat = new SeatDTO();
         sampleSeat.setId(1L);
-        sampleSeat.setSeatNumber("A1");
+        sampleSeat.setSeatNumber("V1");
         sampleSeat.setTheatreId(10L);
         sampleSeat.setAvailable(true);
     }
@@ -54,7 +55,7 @@ class SeatControllerTest {
     void addSeat_returnsCreatedSeat() throws Exception {
         Mockito.when(seatService.addSeat(any(SeatDTO.class))).thenReturn(sampleSeat);
 
-        mockMvc.perform(post("/api/seats")
+        mockMvc.perform(post("/api/v1/seats")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sampleSeat)))
                 .andExpect(status().isCreated())
@@ -65,12 +66,12 @@ class SeatControllerTest {
 
     @Test
     void deleteSeat_returnsNoContent() throws Exception {
-        Mockito.doNothing().when(seatService).deleteSeat(1L, 10L, "A1");
+        Mockito.doNothing().when(seatService).deleteSeat(1L, 10L, "V1");
 
-        mockMvc.perform(delete("/api/seats/theatre/seat")
+        mockMvc.perform(delete("/api/v1/seats/theatre/seat")
                         .param("seatId", "1")
                         .param("theatreId", "10")
-                        .param("seatNumber", "A1"))
+                        .param("seatNumber", "V1"))
                 .andExpect(status().isNoContent());
     }
 
@@ -78,14 +79,14 @@ class SeatControllerTest {
     void patchSeat_updatesSeat() throws Exception {
         SeatDTO updatedSeat = new SeatDTO();
         updatedSeat.setId(1L);
-        updatedSeat.setSeatNumber("A1");
+        updatedSeat.setSeatNumber("V1");
         updatedSeat.setTheatreId(10L);
         updatedSeat.setAvailable(false);
 
         Mockito.when(seatService.patchSeat(eq(10L), eq(1L), any(Map.class)))
                 .thenReturn(updatedSeat);
 
-        mockMvc.perform(patch("/api/seats/theatre/10/seat/1")
+        mockMvc.perform(patch("/api/v1/seats/theatre/10/seat/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"available\":false}"))
                 .andExpect(status().isOk())
@@ -93,16 +94,30 @@ class SeatControllerTest {
     }
 
     @Test
-    void getSeats_returnsSeats() throws Exception {
-        Mockito.when(seatService.getSeats(1L, 10L, "A1")).thenReturn(List.of(sampleSeat));
+    void getSeats_returnsPaginatedSeats() throws Exception {
+        PageResponse<SeatDTO> response = new PageResponse<>(
+                List.of(sampleSeat),
+                0, 10,
+                1L,
+                1,
+                true
+        );
 
-        mockMvc.perform(get("/api/seats/theatre")
+        Mockito.when(seatService.getSeats(1L, 10L, "V1", 0, 10)).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/seats/theatre")
                         .param("seatId", "1")
                         .param("theatreId", "10")
-                        .param("seatNumber", "A1"))
+                        .param("seatNumber", "V1")
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].seatNumber").value("A1"));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].seatNumber").value("V1"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
@@ -110,7 +125,7 @@ class SeatControllerTest {
         Mockito.when(seatService.getSeatsByFilter(any(Map.class)))
                 .thenReturn(List.of(sampleSeat));
 
-        mockMvc.perform(post("/api/seats/search")
+        mockMvc.perform(post("/api/v1/seats/search")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"theatreId\":10}"))
                 .andExpect(status().isOk())

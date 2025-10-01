@@ -88,7 +88,7 @@ class BookingControllerTest {
         Mockito.when(bookingService.bookTickets(eq(sampleCustomer), eq(sampleShow), eq(request.getSeatIds())))
                 .thenReturn(sampleBooking);
 
-        mockMvc.perform(post("/api/bookings")
+        mockMvc.perform(post("/api/v1/bookings")
                         .param("customerId", "1")
                         .param("showId", "1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -119,7 +119,7 @@ class BookingControllerTest {
         Mockito.when(bookingService.bulkBookTickets(eq(sampleCustomer), eq(sampleShow), eq(2)))
                 .thenReturn(sampleBooking);
 
-        mockMvc.perform(post("/api/bookings/bulk")
+        mockMvc.perform(post("/api/v1/bookings/bulk")
                         .param("customerId", "1")
                         .param("showId", "1")
                         .param("numberOfTicketsReq", "2"))
@@ -142,7 +142,7 @@ class BookingControllerTest {
     void cancelBooking_returnsCancelledBooking() throws Exception {
         Mockito.when(bookingService.cancelBooking(1L)).thenReturn(sampleBooking);
 
-        mockMvc.perform(put("/api/bookings/1/cancel"))
+        mockMvc.perform(put("/api/v1/bookings/1/cancel"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L));
     }

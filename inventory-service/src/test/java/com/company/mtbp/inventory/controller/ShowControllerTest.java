@@ -6,6 +6,7 @@ import com.company.mtbp.inventory.dto.TheatreDTO;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.MovieMapper;
 import com.company.mtbp.inventory.mapper.ShowMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.MovieRepository;
 import com.company.mtbp.inventory.repository.ShowRepository;
 import com.company.mtbp.inventory.service.MovieService;
@@ -92,7 +93,7 @@ class ShowControllerTest {
     }
 
     @Test
-    void browseShows_returnsShowsForMovieAndCity() throws Exception {
+    void browseShows_returnsPaginatedShowsForMovieAndCity() throws Exception {
         TheatreDTO theatreDto = new TheatreDTO();
         theatreDto.setId(200L);
         theatreDto.setName(faker.company().name() + " Theatre");
@@ -114,27 +115,41 @@ class ShowControllerTest {
                 })
                 .toList();
 
+        PageResponse<ShowDTO> pageResponse = new PageResponse<>(
+                showsDto,
+                0,
+                10,
+                showsDto.size(),
+                1,
+                true
+        );
+
         Mockito.when(movieService.getMovieByTitle(movieDto.getTitle()))
                 .thenReturn(Optional.of(movieDto));
-        Mockito.when(showService.getShows(eq(movieDto), eq(theatreDto.getCityName()), any()))
-                .thenReturn(showsDto);
+        Mockito.when(showService.getShows(eq(movieDto), eq(theatreDto.getCityName()), any(), eq(0), eq(10)))
+                .thenReturn(pageResponse);
 
-        //MvcResult result = mockMvc.perform(get("/api/shows/browse")
-        mockMvc.perform(get("/api/shows/browse")
+        //MvcResult result = mockMvc.perform(get("/api/v1/shows/browse")
+        mockMvc.perform(get("/api/v1/shows/browse")
                         .param("movieTitle", movieDto.getTitle())
-                        .param("cityName", theatreDto.getCityName()))
+                        .param("cityName", theatreDto.getCityName())
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(showsDto.size()))
-                .andExpect(jsonPath("$[0].movieTitle").value(movieDto.getTitle()))
-                .andReturn();
+                .andExpect(jsonPath("$.content.length()").value(showsDto.size()))
+                .andExpect(jsonPath("$.content[0].movieTitle").value(movieDto.getTitle()))
+                .andExpect(jsonPath("$.totalElements").value(showsDto.size()))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
 
         //String responseBody = result.getResponse().getContentAsString();
         //log.info("Response JSON: {}", responseBody);
     }
 
     @Test
-    void browseShows_returnsShows() throws Exception {
+    void browseShows_returnsPaginatedShows() throws Exception {
         TheatreDTO theatreDto = new TheatreDTO();
         theatreDto.setId(100L);
         theatreDto.setName(faker.company().name() + " Theatre");
@@ -156,16 +171,32 @@ class ShowControllerTest {
                 })
                 .toList();
 
+        PageResponse<ShowDTO> pageResponse = new PageResponse<>(
+                showsDto,
+                0,
+                10,
+                showsDto.size(),
+                1,
+                true
+        );
+
         Mockito.when(movieService.getMovieByTitle(movieDto.getTitle()))
                 .thenReturn(Optional.of(movieDto));
-        Mockito.when(showService.getShows(eq(movieDto), any(), any()))
-                .thenReturn(showsDto);
+        Mockito.when(showService.getShows(eq(movieDto), any(), any(), eq(0), eq(10)))
+                .thenReturn(pageResponse);
 
-        mockMvc.perform(get("/api/shows/browse")
-                        .param("movieTitle", movieDto.getTitle()))
+        mockMvc.perform(get("/api/v1/shows/browse")
+                        .param("movieTitle", movieDto.getTitle())
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(showsDto.size()));
+                .andExpect(jsonPath("$.content.length()").value(showsDto.size()))
+                .andExpect(jsonPath("$.content[0].movieTitle").value(movieDto.getTitle()))
+                .andExpect(jsonPath("$.totalElements").value(showsDto.size()))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
@@ -174,33 +205,48 @@ class ShowControllerTest {
         movieDto.setId(2L);
         movieDto.setTitle(faker.book().title());
 
+        PageResponse<ShowDTO> emptyPage = new PageResponse<>(
+                List.of(),
+                0,
+                10,
+                0,
+                0,
+                true
+        );
+
         Mockito.when(movieService.getMovieByTitle(movieDto.getTitle()))
                 .thenReturn(Optional.of(movieDto));
-        Mockito.when(showService.getShows(eq(movieDto), any(), any()))
-                .thenReturn(List.of());
+        Mockito.when(showService.getShows(eq(movieDto), any(), any(), eq(0), eq(10)))
+                .thenReturn(emptyPage);
 
-        mockMvc.perform(get("/api/shows/browse")
-                        .param("movieTitle", movieDto.getTitle()))
-                .andExpect(status().isNoContent());
+        mockMvc.perform(get("/api/v1/shows/browse")
+                        .param("movieTitle", movieDto.getTitle())
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())  // paginated response always returns 200
+                .andExpect(jsonPath("$.content.length()").value(0))
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
-    void browseShows_throwsNotFound_whenMovieDoesNotExist() throws Exception {
-        String unknownTitle = faker.book().title();
+    void browseShows_throwsNotFound_whenMovieDoesNotExist_directCall() {
+        String unknownTitle = "The Waste Land";
 
         Mockito.when(movieService.getMovieByTitle(unknownTitle))
                 .thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            showController.browseShows(unknownTitle, null, null);
-        });
+        assertThrows(ResourceNotFoundException.class, () ->
+                showController.browseShows(unknownTitle, null, null, 0, 10)
+        );
     }
 
     @Test
     void createShow_returnsCreatedShow() throws Exception {
         Mockito.when(showService.saveShow(any(ShowDTO.class))).thenReturn(sampleShow);
 
-        mockMvc.perform(post("/api/shows")
+        mockMvc.perform(post("/api/v1/shows")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sampleShow)))
                 .andExpect(status().isCreated())
@@ -209,12 +255,12 @@ class ShowControllerTest {
     }
 
     @Test
-    void browseShows_throwsWhenMovieNotFound() {
+    void browseShows_throwsWhenMovieNotFound_directCall() {
         Mockito.when(movieService.getMovieByTitle("Unknown"))
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () ->
-                showController.browseShows("Unknown", null, null)
+                showController.browseShows("Unknown", null, null, 0, 10)
         );
     }
 
@@ -230,7 +276,7 @@ class ShowControllerTest {
 
         Mockito.when(showService.patchShow(eq(sampleShow), any(Map.class))).thenReturn(updated);
 
-        mockMvc.perform(patch("/api/shows/update/100")
+        mockMvc.perform(patch("/api/v1/shows/update/100")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"showDate\":\"" + LocalDate.now().plusDays(1) + "\"}"))
                 .andExpect(status().isOk())
@@ -252,7 +298,7 @@ class ShowControllerTest {
     void getShowById_returnsShow() throws Exception {
         Mockito.when(showService.getShowById(100L)).thenReturn(Optional.of(sampleShow));
 
-        mockMvc.perform(get("/api/shows/100"))
+        mockMvc.perform(get("/api/v1/shows/100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(100))
                 .andExpect(jsonPath("$.movieTitle").value("Interstellar"));
@@ -262,7 +308,7 @@ class ShowControllerTest {
     void getShowById_returnsNotFound() throws Exception {
         Mockito.when(showService.getShowById(999L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/shows/999"))
+        mockMvc.perform(get("/api/v1/shows/999"))
                 .andExpect(status().isNotFound());
     }
 
@@ -270,7 +316,7 @@ class ShowControllerTest {
     void deleteShow_returnsNoContent() throws Exception {
         Mockito.doNothing().when(showService).deleteShow(100L);
 
-        mockMvc.perform(delete("/api/shows/100"))
+        mockMvc.perform(delete("/api/v1/shows/100"))
                 .andExpect(status().isNoContent());
     }
 
@@ -278,7 +324,7 @@ class ShowControllerTest {
     void create_Show_returns_CreatedShow() throws Exception {
         Mockito.when(showService.saveShow(any(ShowDTO.class))).thenReturn(sampleShow);
 
-        mockMvc.perform(post("/api/shows")
+        mockMvc.perform(post("/api/v1/shows")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sampleShow)))
                 .andExpect(status().isCreated())
@@ -287,26 +333,63 @@ class ShowControllerTest {
     }
 
     @Test
-    void browse_Shows_returns_Shows() throws Exception {
-        Mockito.when(movieService.getMovieByTitle("Interstellar")).thenReturn(Optional.of(sampleMovie));
-        Mockito.when(showService.getShows(eq(sampleMovie), eq("Mumbai"), any()))
-                .thenReturn(List.of(sampleShow));
+    void browse_Shows_returns_Paginated_Shows() throws Exception {
+        Mockito.when(movieService.getMovieByTitle("Interstellar"))
+                .thenReturn(Optional.of(sampleMovie));
 
-        mockMvc.perform(get("/api/shows/browse")
+        List<ShowDTO> shows = List.of(sampleShow);
+        PageResponse<ShowDTO> pageResponse = new PageResponse<>(
+                shows,
+                0,
+                10,
+                shows.size(),
+                1,
+                true
+        );
+
+        Mockito.when(showService.getShows(eq(sampleMovie), eq("Mumbai"), any(), eq(0), eq(10)))
+                .thenReturn(pageResponse);
+
+        mockMvc.perform(get("/api/v1/shows/browse")
                         .param("movieTitle", "Interstellar")
-                        .param("cityName", "Mumbai"))
+                        .param("cityName", "Mumbai")
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].movieTitle").value("Interstellar"));
+                .andExpect(jsonPath("$.content.length()").value(shows.size()))
+                .andExpect(jsonPath("$.content[0].movieTitle").value("Interstellar"))
+                .andExpect(jsonPath("$.totalElements").value(shows.size()))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
-    void browse_Shows_returns_NoContent_when_NoShowsFound() throws Exception {
-        Mockito.when(movieService.getMovieByTitle("Interstellar")).thenReturn(Optional.of(sampleMovie));
-        Mockito.when(showService.getShows(eq(sampleMovie), any(), any())).thenReturn(List.of());
+    void browseShows_returnsEmptyPaginatedResponse_whenNoShowsFound() throws Exception {
+        Mockito.when(movieService.getMovieByTitle("Interstellar"))
+                .thenReturn(Optional.of(sampleMovie));
 
-        mockMvc.perform(get("/api/shows/browse")
-                        .param("movieTitle", "Interstellar"))
-                .andExpect(status().isNoContent());
+        PageResponse<ShowDTO> emptyPage = new PageResponse<>(
+                List.of(),
+                0,
+                10,
+                0,
+                0,
+                true
+        );
+
+        Mockito.when(showService.getShows(eq(sampleMovie), any(), any(), eq(0), eq(10)))
+                .thenReturn(emptyPage);
+
+        mockMvc.perform(get("/api/v1/shows/browse")
+                        .param("movieTitle", "Interstellar")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk()) // empty paginated response returns 200
+                .andExpect(jsonPath("$.content.length()").value(0))
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 }

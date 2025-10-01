@@ -151,7 +151,7 @@ public class BookingTicketWriteScenariosTest {
 
         SeatSelectionRequest request = new SeatSelectionRequest(seatIds);
 
-        mockMvc.perform(post("/api/bookings")
+        mockMvc.perform(post("/api/v1/bookings")
                         .param("customerId", Long.toString(customerId))
                         .param("showId", Long.toString(showId))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -229,7 +229,7 @@ public class BookingTicketWriteScenariosTest {
 
         SeatSelectionRequest request = new SeatSelectionRequest(seatIds);
 
-        mockMvc.perform(post("/api/bookings")
+        mockMvc.perform(post("/api/v1/bookings")
                         .param("customerId", Long.toString(customerId))
                         .param("showId", Long.toString(showId))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -242,7 +242,7 @@ public class BookingTicketWriteScenariosTest {
     void bookTickets_noSeatsSelected_throwsException() throws Exception {
         SeatSelectionRequest emptyRequest = new SeatSelectionRequest(List.of());
 
-        mockMvc.perform(post("/api/bookings")
+        mockMvc.perform(post("/api/v1/bookings")
                         .param("customerId", "1")
                         .param("showId", "1")
                         .contentType(MediaType.APPLICATION_JSON)

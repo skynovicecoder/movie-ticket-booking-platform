@@ -7,12 +7,16 @@ import com.company.mtbp.inventory.entity.Show;
 import com.company.mtbp.inventory.entity.Theatre;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.ShowMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.MovieRepository;
 import com.company.mtbp.inventory.repository.ShowRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
 import com.company.mtbp.inventory.specifications.ShowSpecifications;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -86,16 +90,26 @@ public class ShowService {
         return saveShow(showDTO);
     }
 
-    public List<ShowDTO> getShows(MovieDTO movieDTO, String cityName, LocalDate date) {
+    public PageResponse<ShowDTO> getShows(MovieDTO movieDTO, String cityName, LocalDate date, int page, int size) {
         Movie movie = movieDTO != null ? movieRepository.findById(movieDTO.getId()).orElse(null) : null;
 
         Specification<Show> spec = ShowSpecifications.byMovie(movie)
                 .and(ShowSpecifications.byCity(cityName))
                 .and(ShowSpecifications.byDate(date));
 
-        List<Show> shows = showRepository.findAll(spec);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Show> showPage = showRepository.findAll(spec, pageable);
 
-        return showMapper.toDTOList(shows);
+        List<ShowDTO> showDTOs = showMapper.toDTOList(showPage.getContent());
+
+        return new PageResponse<>(
+                showDTOs,
+                showPage.getNumber(),
+                showPage.getSize(),
+                showPage.getTotalElements(),
+                showPage.getTotalPages(),
+                showPage.isLast()
+        );
     }
 
     public Optional<ShowDTO> getShowById(Long id) {

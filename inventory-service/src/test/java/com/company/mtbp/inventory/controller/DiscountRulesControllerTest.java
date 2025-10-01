@@ -3,6 +3,7 @@ package com.company.mtbp.inventory.controller;
 import com.company.mtbp.inventory.dto.DiscountRulesDTO;
 import com.company.mtbp.inventory.enums.ConditionType;
 import com.company.mtbp.inventory.enums.DiscountType;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.DiscountRulesService;
 import com.github.javafaker.Faker;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +65,7 @@ class DiscountRulesControllerTest {
         Mockito.when(discountRulesService.saveDiscount(any(DiscountRulesDTO.class)))
                 .thenReturn(sampleDiscount);
 
-        mockMvc.perform(post("/api/discounts")
+        mockMvc.perform(post("/api/v1/discounts")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Third Ticket Discount\",\"discountType\":\"PERCENTAGE\",\"discountValue\":50.0,\"conditionType\":\"TICKET_INDEX\",\"ruleCondition\":\"{\\\"index\\\":2}\",\"active\":true}"))
                 .andExpect(status().isCreated())
@@ -84,7 +85,7 @@ class DiscountRulesControllerTest {
         Mockito.when(discountRulesService.patchDiscount(eq(sampleDiscount), eq(updates)))
                 .thenReturn(sampleDiscount);
 
-        mockMvc.perform(patch("/api/discounts/update/1")
+        mockMvc.perform(patch("/api/v1/discounts/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"discountValue\":60.0}"))
                 .andExpect(status().isOk())
@@ -98,14 +99,14 @@ class DiscountRulesControllerTest {
         Mockito.when(discountRulesService.getDiscountById(1L))
                 .thenReturn(Optional.empty());
 
-        mockMvc.perform(patch("/api/discounts/update/1")
+        mockMvc.perform(patch("/api/v1/discounts/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"discountValue\":60.0}"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void getAllDiscounts_returnsDiscounts() throws Exception {
+    void getAllDiscounts_returnsPaginatedResponse() throws Exception {
         List<DiscountRulesDTO> discounts = IntStream.range(0, 3)
                 .mapToObj(i -> {
                     DiscountRulesDTO dto = new DiscountRulesDTO();
@@ -119,21 +120,46 @@ class DiscountRulesControllerTest {
                     return dto;
                 }).toList();
 
-        Mockito.when(discountRulesService.getAllDiscounts())
-                .thenReturn(discounts);
+        PageResponse<DiscountRulesDTO> response = new PageResponse<>(
+                discounts,
+                0, 10,
+                discounts.size(),
+                1,
+                true
+        );
 
-        mockMvc.perform(get("/api/discounts"))
+        Mockito.when(discountRulesService.getAllDiscounts(0, 10)).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/discounts")
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(discounts.size()));
+                .andExpect(jsonPath("$.content.length()").value(discounts.size()))
+                .andExpect(jsonPath("$.totalElements").value(discounts.size()))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
-    void getAllDiscounts_returnsNoContent() throws Exception {
-        Mockito.when(discountRulesService.getAllDiscounts())
-                .thenReturn(List.of());
+    void getAllDiscounts_returnsEmptyPage() throws Exception {
+        PageResponse<DiscountRulesDTO> emptyResponse = new PageResponse<>(
+                List.of(),
+                0, 10,
+                0L, 0,
+                true
+        );
 
-        mockMvc.perform(get("/api/discounts"))
-                .andExpect(status().isNoContent());
+        Mockito.when(discountRulesService.getAllDiscounts(0, 10)).thenReturn(emptyResponse);
+
+        mockMvc.perform(get("/api/v1/discounts")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(0))
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
@@ -141,7 +167,7 @@ class DiscountRulesControllerTest {
         Mockito.when(discountRulesService.getDiscountById(1L))
                 .thenReturn(Optional.of(sampleDiscount));
 
-        mockMvc.perform(get("/api/discounts/1"))
+        mockMvc.perform(get("/api/v1/discounts/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1L));
     }
@@ -151,7 +177,7 @@ class DiscountRulesControllerTest {
         Mockito.when(discountRulesService.getDiscountById(1L))
                 .thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/discounts/1"))
+        mockMvc.perform(get("/api/v1/discounts/1"))
                 .andExpect(status().isNotFound());
     }
 
@@ -162,7 +188,7 @@ class DiscountRulesControllerTest {
         Mockito.when(discountRulesService.getOffers(1L, null))
                 .thenReturn(offers);
 
-        mockMvc.perform(get("/api/discounts/offers")
+        mockMvc.perform(get("/api/v1/discounts/offers")
                         .param("cityId", "1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(offers.size()))
@@ -174,7 +200,7 @@ class DiscountRulesControllerTest {
         Mockito.when(discountRulesService.getOffers(null, null))
                 .thenReturn(List.of());
 
-        mockMvc.perform(get("/api/discounts/offers"))
+        mockMvc.perform(get("/api/v1/discounts/offers"))
                 .andExpect(status().isNoContent());
     }
 }

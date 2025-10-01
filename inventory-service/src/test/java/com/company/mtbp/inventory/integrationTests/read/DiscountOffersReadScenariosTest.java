@@ -91,7 +91,7 @@ class DiscountOffersReadScenariosTest {
         Mockito.when(theatreRepository.findById(theatreId)).thenReturn(Optional.of(theatre));
         Mockito.when(discountRulesRepository.findAll()).thenReturn(discountRulesList);
 
-        mockMvc.perform(get("/api/discounts/offers")
+        mockMvc.perform(get("/api/v1/discounts/offers")
                         .param("cityId", cityId.toString())
                         .param("theatreId", theatreId.toString()))
                 .andExpect(status().isOk())
@@ -107,7 +107,7 @@ class DiscountOffersReadScenariosTest {
         Mockito.when(theatreRepository.findById(theatreId)).thenReturn(Optional.empty());
         Mockito.when(discountRulesRepository.findAll()).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/discounts/offers")
+        mockMvc.perform(get("/api/v1/discounts/offers")
                         .param("cityId", cityId.toString())
                         .param("theatreId", theatreId.toString()))
                 .andExpect(status().isNoContent());
@@ -128,7 +128,7 @@ class DiscountOffersReadScenariosTest {
 
         Mockito.when(discountRulesRepository.findAll()).thenReturn(discountRulesList);
 
-        mockMvc.perform(get("/api/discounts/offers"))
+        mockMvc.perform(get("/api/v1/discounts/offers"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(discountRulesList.size()));
     }

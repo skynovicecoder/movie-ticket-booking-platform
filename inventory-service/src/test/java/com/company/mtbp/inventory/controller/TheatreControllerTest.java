@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.TheatreDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.TheatreService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +54,7 @@ class TheatreControllerTest {
     void createTheatre_returnsCreated() throws Exception {
         Mockito.when(theatreService.saveTheatre(any(TheatreDTO.class))).thenReturn(sampleTheatre);
 
-        mockMvc.perform(post("/api/theatres")
+        mockMvc.perform(post("/api/v1/theatres")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sampleTheatre)))
                 .andExpect(status().isCreated())
@@ -70,7 +71,7 @@ class TheatreControllerTest {
         Mockito.when(theatreService.patchTheatre(any(TheatreDTO.class), eq(updates)))
                 .thenReturn(sampleTheatre);
 
-        mockMvc.perform(patch("/api/theatres/update/1")
+        mockMvc.perform(patch("/api/v1/theatres/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updates)))
                 .andExpect(status().isOk())
@@ -79,28 +80,57 @@ class TheatreControllerTest {
     }
 
     @Test
-    void getAllTheatres_returnsList() throws Exception {
-        Mockito.when(theatreService.getAllTheatres()).thenReturn(List.of(sampleTheatre));
+    void getAllTheatres_returnsPaginatedResponse() throws Exception {
+        PageResponse<TheatreDTO> response = new PageResponse<>(
+                List.of(sampleTheatre),
+                0, 10,
+                1L,
+                1,
+                true
+        );
 
-        mockMvc.perform(get("/api/theatres"))
+        Mockito.when(theatreService.getAllTheatres(0, 10)).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/theatres")
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id").value(sampleTheatre.getId()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].id").value(sampleTheatre.getId()))
+                .andExpect(jsonPath("$.content[0].name").value("Sample Theatre"))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
-    void getAllTheatres_returnsNoContentWhenEmpty() throws Exception {
-        Mockito.when(theatreService.getAllTheatres()).thenReturn(List.of());
+    void getAllTheatres_returnsEmptyPage() throws Exception {
+        PageResponse<TheatreDTO> response = new PageResponse<>(
+                List.of(), // empty content
+                0, 10,
+                0L, 0,
+                true
+        );
 
-        mockMvc.perform(get("/api/theatres"))
-                .andExpect(status().isNoContent());
+        Mockito.when(theatreService.getAllTheatres(0, 10)).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/theatres")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(0))
+                .andExpect(jsonPath("$.totalElements").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
     void getTheatreById_returnsTheatre() throws Exception {
         Mockito.when(theatreService.getTheatreById(1L)).thenReturn(Optional.of(sampleTheatre));
 
-        mockMvc.perform(get("/api/theatres/1"))
+        mockMvc.perform(get("/api/v1/theatres/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(sampleTheatre.getId()))
                 .andExpect(jsonPath("$.name").value(sampleTheatre.getName()));
@@ -110,7 +140,7 @@ class TheatreControllerTest {
     void getTheatreById_returnsNotFound() throws Exception {
         Mockito.when(theatreService.getTheatreById(99L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/theatres/99"))
+        mockMvc.perform(get("/api/v1/theatres/99"))
                 .andExpect(status().isNotFound());
     }
 
@@ -118,7 +148,7 @@ class TheatreControllerTest {
     void getTheatresByCity_returnsList() throws Exception {
         Mockito.when(theatreService.getTheatresByCity("Mumbai")).thenReturn(List.of(sampleTheatre));
 
-        mockMvc.perform(get("/api/theatres/city/Mumbai"))
+        mockMvc.perform(get("/api/v1/theatres/city/Mumbai"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].cityName").value("Mumbai"));
@@ -128,7 +158,7 @@ class TheatreControllerTest {
     void getTheatresByCity_returnsNoContentWhenEmpty() throws Exception {
         Mockito.when(theatreService.getTheatresByCity("Unknown")).thenReturn(List.of());
 
-        mockMvc.perform(get("/api/theatres/city/Unknown"))
+        mockMvc.perform(get("/api/v1/theatres/city/Unknown"))
                 .andExpect(status().isNoContent());
     }
 }

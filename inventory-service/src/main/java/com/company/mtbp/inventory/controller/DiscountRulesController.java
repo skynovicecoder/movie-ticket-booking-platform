@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.DiscountRulesDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.DiscountRulesService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/discounts")
+@RequestMapping("/api/v1/discounts")
 public class DiscountRulesController {
 
     private final DiscountRulesService discountRulesService;
@@ -38,10 +39,12 @@ public class DiscountRulesController {
     }
 
     @GetMapping
-    public ResponseEntity<List<DiscountRulesDTO>> getAllDiscounts() {
-        List<DiscountRulesDTO> discounts = discountRulesService.getAllDiscounts();
-        if (discounts.isEmpty()) return ResponseEntity.noContent().build();
-        return ResponseEntity.ok(discounts);
+    public ResponseEntity<PageResponse<DiscountRulesDTO>> getAllDiscounts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        PageResponse<DiscountRulesDTO> response = discountRulesService.getAllDiscounts(page, size);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

@@ -155,14 +155,6 @@
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
-                        <configuration>
-                            <excludes>
-                                <!--<exclude>**/dto/*</exclude>
-                                <exclude>**/record/*</exclude>
-                                <exclude>**/component/*</exclude>
-                                <exclude>**/entity/*</exclude>-->
-                            </excludes>
-                        </configuration>
                     </execution>
 
                     <!-- generate report -->
@@ -172,14 +164,6 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
-                        <configuration>
-                            <excludes>
-                                <!--<exclude>**/dto/*</exclude>
-                                <exclude>**/record/*</exclude>
-                                <exclude>**/component/*</exclude>
-                                <exclude>**/entity/*</exclude>-->
-                            </excludes>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>

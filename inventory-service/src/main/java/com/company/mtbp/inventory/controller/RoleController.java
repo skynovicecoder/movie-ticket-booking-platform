@@ -1,16 +1,16 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.RoleDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.RoleService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/roles")
+@RequestMapping("/api/v1/admin/roles")
 public class RoleController {
 
     private final RoleService roleService;
@@ -31,8 +31,12 @@ public class RoleController {
     }
 
     @GetMapping
-    public ResponseEntity<List<RoleDTO>> getAllRoles() {
-        return ResponseEntity.ok(roleService.getAllRoles());
+    public ResponseEntity<PageResponse<RoleDTO>> getAllRoles(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        PageResponse<RoleDTO> response = roleService.getAllRoles(page, size);
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{id}")

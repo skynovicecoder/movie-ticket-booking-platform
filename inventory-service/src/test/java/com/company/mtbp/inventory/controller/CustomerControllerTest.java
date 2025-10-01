@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.CustomerDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.CustomerService;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +54,7 @@ class CustomerControllerTest {
     void createCustomer_returnsCreatedCustomer() throws Exception {
         Mockito.when(customerService.saveCustomer(any(CustomerDTO.class))).thenReturn(sampleCustomer);
 
-        mockMvc.perform(post("/api/customers")
+        mockMvc.perform(post("/api/v1/customers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"" + sampleCustomer.getName() + "\", " +
                                 "\"email\":\"" + sampleCustomer.getEmail() + "\", " +
@@ -68,7 +69,7 @@ class CustomerControllerTest {
     void getCustomerById_returnsCustomer() throws Exception {
         Mockito.when(customerService.getCustomerById(1L)).thenReturn(Optional.of(sampleCustomer));
 
-        mockMvc.perform(get("/api/customers/1"))
+        mockMvc.perform(get("/api/v1/customers/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(sampleCustomer.getId()))
                 .andExpect(jsonPath("$.name").value(sampleCustomer.getName()));
@@ -78,7 +79,7 @@ class CustomerControllerTest {
     void getCustomerById_returnsNotFound_whenCustomerMissing() throws Exception {
         Mockito.when(customerService.getCustomerById(99L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/customers/99"))
+        mockMvc.perform(get("/api/v1/customers/99"))
                 .andExpect(status().isNotFound());
     }
 
@@ -93,7 +94,7 @@ class CustomerControllerTest {
         Mockito.when(customerService.getCustomerById(1L)).thenReturn(Optional.of(sampleCustomer));
         Mockito.when(customerService.patchCustomer(any(CustomerDTO.class), any(Map.class))).thenReturn(updated);
 
-        mockMvc.perform(patch("/api/customers/update/1")
+        mockMvc.perform(patch("/api/v1/customers/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"UpdatedName\"}"))
                 .andExpect(status().isOk())
@@ -104,26 +105,39 @@ class CustomerControllerTest {
     void patchCustomer_returnsNotFound_whenCustomerMissing() throws Exception {
         Mockito.when(customerService.getCustomerById(99L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(patch("/api/customers/update/99")
+        mockMvc.perform(patch("/api/v1/customers/update/99")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"UpdatedName\"}"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void getAllCustomers_returnsList() throws Exception {
-        List<CustomerDTO> customers = List.of(sampleCustomer);
-        Mockito.when(customerService.getAllCustomers()).thenReturn(customers);
+    void getAllCustomers_returnsPaginatedResponse() throws Exception {
+        PageResponse<CustomerDTO> response = new PageResponse<>(
+                List.of(sampleCustomer),
+                0, 10,
+                1L,
+                1,
+                true
+        );
 
-        mockMvc.perform(get("/api/customers"))
+        Mockito.when(customerService.getAllCustomers(0, 10)).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/customers")
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(customers.size()))
-                .andExpect(jsonPath("$[0].email").value(sampleCustomer.getEmail()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].email").value(sampleCustomer.getEmail()))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
     void deleteCustomer_returnsNoContent() throws Exception {
-        mockMvc.perform(delete("/api/customers/1"))
+        mockMvc.perform(delete("/api/v1/customers/1"))
                 .andExpect(status().isNoContent());
 
         Mockito.verify(customerService).deleteCustomer(1L);

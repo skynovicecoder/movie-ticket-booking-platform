@@ -4,12 +4,16 @@ import com.company.mtbp.inventory.dto.CityDTO;
 import com.company.mtbp.inventory.entity.City;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.mapper.CityMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.CityRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -83,15 +87,20 @@ class CityServiceTest {
     }
 
     @Test
-    void getAllCities_returnsList() {
-        when(cityRepository.findAll()).thenReturn(List.of(sampleCity));
-        when(cityMapper.toDTOList(List.of(sampleCity))).thenReturn(List.of(sampleCityDTO));
+    void getAllCities_returnsPageResponse() {
+        Page<City> cityPage = new PageImpl<>(List.of(sampleCity));
+        when(cityRepository.findAll(PageRequest.of(0, 10))).thenReturn(cityPage);
+        when(cityMapper.toDTOList(cityPage.getContent())).thenReturn(List.of(sampleCityDTO));
 
-        List<CityDTO> result = cityService.getAllCities();
+        PageResponse<CityDTO> result = cityService.getAllCities(0, 10);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Mumbai", result.get(0).getName());
+        assertEquals(1, result.getContent().size());
+        assertEquals("Mumbai", result.getContent().getFirst().getName());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(0, result.getPageNumber());
+        assertTrue(result.isLast());
     }
 
     @Test

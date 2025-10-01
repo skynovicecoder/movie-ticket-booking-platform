@@ -4,8 +4,12 @@ import com.company.mtbp.inventory.dto.CityDTO;
 import com.company.mtbp.inventory.entity.City;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.mapper.CityMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.CityRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -46,9 +50,20 @@ public class CityService {
         return saveCity(cityDTO);
     }
 
-    public List<CityDTO> getAllCities() {
-        List<City> cities = cityRepository.findAll();
-        return cityMapper.toDTOList(cities);
+    public PageResponse<CityDTO> getAllCities(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<City> cityPage = cityRepository.findAll(pageable);
+
+        List<CityDTO> cityDTOs = cityMapper.toDTOList(cityPage.getContent());
+
+        return new PageResponse<>(
+                cityDTOs,
+                cityPage.getNumber(),
+                cityPage.getSize(),
+                cityPage.getTotalElements(),
+                cityPage.getTotalPages(),
+                cityPage.isLast()
+        );
     }
 
     public Optional<CityDTO> getCityById(Long id) {

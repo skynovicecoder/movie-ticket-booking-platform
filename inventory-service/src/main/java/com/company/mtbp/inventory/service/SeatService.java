@@ -6,6 +6,7 @@ import com.company.mtbp.inventory.entity.Show;
 import com.company.mtbp.inventory.entity.Theatre;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.SeatMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.SeatRepository;
 import com.company.mtbp.inventory.repository.ShowRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
@@ -92,28 +93,37 @@ public class SeatService {
         return seatMapper.toDTO(updatedSeat);
     }
 
-    public List<SeatDTO> getSeats(Long seatId, Long theatreId, String seatNumber) {
+    public PageResponse<SeatDTO> getSeats(Long seatId, Long theatreId, String seatNumber, int page, int size) {
+        List<SeatDTO> filteredSeats;
+
         if (theatreId != null && seatId != null) {
-            return Collections.singletonList(getSeatByIdAndTheatre(seatId, theatreId));
+            filteredSeats = Collections.singletonList(getSeatByIdAndTheatre(seatId, theatreId));
+        } else if (theatreId != null && seatNumber != null) {
+            filteredSeats = getSeatsByTheatreIdAndSeatNumber(theatreId, seatNumber);
+        } else if (theatreId != null) {
+            filteredSeats = getSeatsByTheatre(theatreId);
+        } else if (seatId != null) {
+            filteredSeats = Collections.singletonList(getSeatById(seatId));
+        } else if (seatNumber != null) {
+            filteredSeats = getSeatsBySeatNumber(seatNumber);
+        } else {
+            filteredSeats = getAllSeats();
         }
 
-        if (theatreId != null && seatNumber != null) {
-            return getSeatsByTheatreIdAndSeatNumber(theatreId, seatNumber);
-        }
+        int start = page * size;
+        int end = Math.min(start + size, filteredSeats.size());
+        List<SeatDTO> pagedList = (start > filteredSeats.size()) ? List.of() : filteredSeats.subList(start, end);
 
-        if (theatreId != null) {
-            return getSeatsByTheatre(theatreId);
-        }
+        int totalPages = (int) Math.ceil((double) filteredSeats.size() / size);
 
-        if (seatId != null) {
-            return Collections.singletonList(getSeatById(seatId));
-        }
-
-        if (seatNumber != null) {
-            return getSeatsBySeatNumber(seatNumber);
-        }
-
-        return getAllSeats();
+        return new PageResponse<>(
+                pagedList,
+                page,
+                size,
+                filteredSeats.size(),
+                totalPages,
+                page == totalPages - 1 || totalPages == 0
+        );
     }
 
     public SeatDTO getSeatByIdAndTheatre(Long seatId, Long theatreId) {

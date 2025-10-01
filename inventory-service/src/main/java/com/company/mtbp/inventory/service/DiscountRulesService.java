@@ -7,10 +7,14 @@ import com.company.mtbp.inventory.entity.Theatre;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.DiscountRulesMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.CityRepository;
 import com.company.mtbp.inventory.repository.DiscountRulesRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -62,9 +66,20 @@ public class DiscountRulesService {
                 .map(discountRulesMapper::toDTO);
     }
 
-    public List<DiscountRulesDTO> getAllDiscounts() {
-        List<DiscountRules> list = discountRulesRepository.findAll();
-        return discountRulesMapper.toDTOList(list);
+    public PageResponse<DiscountRulesDTO> getAllDiscounts(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<DiscountRules> discountPage = discountRulesRepository.findAll(pageable);
+
+        List<DiscountRulesDTO> dtos = discountRulesMapper.toDTOList(discountPage.getContent());
+
+        return new PageResponse<>(
+                dtos,
+                discountPage.getNumber(),
+                discountPage.getSize(),
+                discountPage.getTotalElements(),
+                discountPage.getTotalPages(),
+                discountPage.isLast()
+        );
     }
 
     public DiscountRulesDTO patchDiscount(DiscountRulesDTO dto, Map<String, Object> updates) {

@@ -88,7 +88,7 @@ public class BulkBookingAndCancellationWriteScenariosTest {
         Mockito.when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
         Mockito.when(discountRulesRepository.findByActiveTrue()).thenReturn(List.of());
 
-        mockMvc.perform(post("/api/bookings/bulk")
+        mockMvc.perform(post("/api/v1/bookings/bulk")
                         .param("customerId", "1")
                         .param("showId", "10")
                         .param("numberOfTicketsReq", "1"))
@@ -123,7 +123,7 @@ public class BulkBookingAndCancellationWriteScenariosTest {
         });
         Mockito.when(seatRepository.save(any(Seat.class))).thenReturn(seat);
 
-        mockMvc.perform(put("/api/bookings/{bookingId}/cancel", 60L))
+        mockMvc.perform(put("/api/v1/bookings/{bookingId}/cancel", 60L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CANCELLED"));
     }

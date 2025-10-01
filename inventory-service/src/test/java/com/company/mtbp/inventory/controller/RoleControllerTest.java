@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.RoleDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.RoleService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,7 +53,7 @@ class RoleControllerTest {
     void createRole_returnsCreatedRole() throws Exception {
         Mockito.when(roleService.createRole(any(RoleDTO.class))).thenReturn(sampleRole);
 
-        mockMvc.perform(post("/api/admin/roles")
+        mockMvc.perform(post("/api/v1/admin/roles")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(sampleRole)))
                 .andExpect(status().isCreated())
@@ -64,21 +65,34 @@ class RoleControllerTest {
     void getRoleById_returnsRole() throws Exception {
         Mockito.when(roleService.getRoleById(1L)).thenReturn(sampleRole);
 
-        mockMvc.perform(get("/api/admin/roles/1"))
+        mockMvc.perform(get("/api/v1/admin/roles/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(sampleRole.getId()))
                 .andExpect(jsonPath("$.name").value(sampleRole.getName()));
     }
 
     @Test
-    void getAllRoles_returnsListOfRoles() throws Exception {
-        List<RoleDTO> roles = List.of(sampleRole);
-        Mockito.when(roleService.getAllRoles()).thenReturn(roles);
+    void getAllRoles_returnsPaginatedResponse() throws Exception {
+        PageResponse<RoleDTO> response = new PageResponse<>(
+                List.of(sampleRole),
+                0, 10,
+                1L,
+                1,
+                true
+        );
 
-        mockMvc.perform(get("/api/admin/roles"))
+        Mockito.when(roleService.getAllRoles(0, 10)).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/admin/roles")
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(roles.size()))
-                .andExpect(jsonPath("$[0].name").value(sampleRole.getName()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].name").value(sampleRole.getName()))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
@@ -89,7 +103,7 @@ class RoleControllerTest {
 
         Mockito.when(roleService.patchRole(eq(1L), any(Map.class))).thenReturn(updatedRole);
 
-        mockMvc.perform(patch("/api/admin/roles/1")
+        mockMvc.perform(patch("/api/v1/admin/roles/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"UPDATED\"}"))
                 .andExpect(status().isOk())
@@ -100,7 +114,7 @@ class RoleControllerTest {
     void deleteRole_returnsNoContent() throws Exception {
         Mockito.doNothing().when(roleService).deleteRole(1L);
 
-        mockMvc.perform(delete("/api/admin/roles/1"))
+        mockMvc.perform(delete("/api/v1/admin/roles/1"))
                 .andExpect(status().isNoContent());
     }
 }

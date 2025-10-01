@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.CityDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.CityService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/cities")
+@RequestMapping("/api/v1/cities")
 public class CityController {
 
     private final CityService cityService;
@@ -27,9 +28,12 @@ public class CityController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CityDTO>> getAllCities() {
-        List<CityDTO> cities = cityService.getAllCities();
-        return ResponseEntity.ok(cities);
+    public ResponseEntity<PageResponse<CityDTO>> getAllCities(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        PageResponse<CityDTO> response = cityService.getAllCities(page, size);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

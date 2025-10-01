@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.SeatDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.SeatService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/seats")
+@RequestMapping("/api/v1/seats")
 public class SeatController {
 
     private final SeatService seatService;
@@ -42,12 +43,14 @@ public class SeatController {
     }
 
     @GetMapping("/theatre")
-    public ResponseEntity<List<SeatDTO>> getSeats(
+    public ResponseEntity<PageResponse<SeatDTO>> getSeats(
             @RequestParam(required = false) Long theatreId,
             @RequestParam(required = false) String seatNumber,
-            @RequestParam(required = false) Long seatId) {
+            @RequestParam(required = false) Long seatId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        List<SeatDTO> result = seatService.getSeats(seatId, theatreId, seatNumber);
+        PageResponse<SeatDTO> result = seatService.getSeats(seatId, theatreId, seatNumber, page, size);
         return ResponseEntity.ok(result);
     }
 

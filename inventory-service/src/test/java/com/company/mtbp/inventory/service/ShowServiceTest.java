@@ -7,6 +7,7 @@ import com.company.mtbp.inventory.entity.Show;
 import com.company.mtbp.inventory.entity.Theatre;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.ShowMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.MovieRepository;
 import com.company.mtbp.inventory.repository.ShowRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
@@ -15,6 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
@@ -129,14 +132,29 @@ class ShowServiceTest {
     }
 
     @Test
-    void getShows_success() {
+    void getShows_success_paginated() {
         when(movieRepository.findById(1L)).thenReturn(Optional.of(sampleMovie));
-        when(showRepository.findAll(any(Specification.class))).thenReturn(List.of(sampleShow));
+
+        when(showRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(sampleShow)));
+
         when(showMapper.toDTOList(List.of(sampleShow))).thenReturn(List.of(sampleShowDTO));
 
-        List<ShowDTO> shows = showService.getShows(sampleMovieDTO, "Mumbai", LocalDate.now());
-        assertEquals(1, shows.size());
-        assertEquals(1L, shows.getFirst().getId());
+        PageResponse<ShowDTO> result = showService.getShows(
+                sampleMovieDTO,
+                "Mumbai",
+                LocalDate.now(),
+                0,
+                10
+        );
+
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals(1L, result.getContent().getFirst().getId());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(0, result.getPageNumber());
+        assertTrue(result.isLast());
     }
 
     @Test
