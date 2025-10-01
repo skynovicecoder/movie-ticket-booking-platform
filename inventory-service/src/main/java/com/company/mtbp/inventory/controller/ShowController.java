@@ -3,6 +3,7 @@ package com.company.mtbp.inventory.controller;
 import com.company.mtbp.inventory.dto.MovieDTO;
 import com.company.mtbp.inventory.dto.ShowDTO;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.MovieService;
 import com.company.mtbp.inventory.service.ShowService;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,12 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/shows")
+@RequestMapping("/api/v1/shows")
 public class ShowController {
 
     private final ShowService showService;
@@ -34,19 +34,20 @@ public class ShowController {
     }
 
     @GetMapping("/browse")
-    public ResponseEntity<List<ShowDTO>> browseShows(@RequestParam(required = false) String movieTitle,
-                                                     @RequestParam(required = false) String cityName,
-                                                     @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+    public ResponseEntity<PageResponse<ShowDTO>> browseShows(
+            @RequestParam(required = false) String movieTitle,
+            @RequestParam(required = false) String cityName,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
         MovieDTO movieDto = null;
         if (movieTitle != null) {
             movieDto = movieService.getMovieByTitle(movieTitle)
                     .orElseThrow(() -> new ResourceNotFoundException("Movie not found with title: " + movieTitle));
         }
 
-        List<ShowDTO> showsDto = showService.getShows(movieDto, cityName, date);
-        if (showsDto.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+        PageResponse<ShowDTO> showsDto = showService.getShows(movieDto, cityName, date, page, size);
         return ResponseEntity.ok(showsDto);
     }
 

@@ -6,6 +6,7 @@ import com.company.mtbp.inventory.entity.Show;
 import com.company.mtbp.inventory.entity.Theatre;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.SeatMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.SeatRepository;
 import com.company.mtbp.inventory.repository.ShowRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
@@ -13,14 +14,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class SeatServiceTest {
 
@@ -152,6 +154,41 @@ class SeatServiceTest {
         assertThrows(ResourceNotFoundException.class, () ->
                 seatService.patchSeat(1L, 1L, Map.of("invalidField", "value"))
         );
+    }
+
+    @Test
+    void getSeats_paginationWorksCorrectly() {
+        // Sample seats
+        SeatDTO seat1 = new SeatDTO(1L, "R1", "REGULAR", true, 101L, "Big Theatre", 201L);
+        SeatDTO seat2 = new SeatDTO(2L, "R2", "REGULAR", true, 101L, "Big Theatre", 201L);
+        SeatDTO seat3 = new SeatDTO(3L, "R3", "REGULAR", true, 101L, "Big Theatre", 201L);
+        List<SeatDTO> allSeats = List.of(seat1, seat2, seat3);
+
+        SeatService seatServiceSpy = Mockito.spy(seatService);
+        doReturn(allSeats).when(seatServiceSpy).getSeatsByTheatre(10L);
+
+        PageResponse<SeatDTO> result = seatServiceSpy.getSeats(
+                null,
+                10L,
+                null,
+                0,
+                2
+        );
+
+        assertNotNull(result);
+        assertEquals(2, result.getContent().size());
+        assertEquals(3, result.getTotalElements());
+        assertEquals(2, result.getTotalPages());
+        assertEquals(0, result.getPageNumber());
+        assertFalse(result.isLast());
+
+        assertEquals("R1", result.getContent().get(0).getSeatNumber());
+        assertEquals("R2", result.getContent().get(1).getSeatNumber());
+
+        PageResponse<SeatDTO> lastPage = seatServiceSpy.getSeats(null, 10L, null, 1, 2);
+        assertEquals(1, lastPage.getContent().size());
+        assertEquals("R3", lastPage.getContent().getFirst().getSeatNumber());
+        assertTrue(lastPage.isLast());
     }
 
     @Test

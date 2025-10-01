@@ -86,7 +86,7 @@ public class TheatreUpdateSeatInventoryWriteScenariosTest {
                 }
                 """;
 
-        mockMvc.perform(post("/api/seats")
+        mockMvc.perform(post("/api/v1/seats")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestJson))
                 .andExpect(status().isCreated())
@@ -99,7 +99,7 @@ public class TheatreUpdateSeatInventoryWriteScenariosTest {
     void deleteSeat_shouldReturnNoContent() throws Exception {
         Mockito.when(seatRepository.findById(5L)).thenReturn(Optional.of(seat));
 
-        mockMvc.perform(delete("/api/seats/theatre/seat")
+        mockMvc.perform(delete("/api/v1/seats/theatre/seat")
                         .param("seatId", "5"))
                 .andExpect(status().isNoContent());
 
@@ -125,7 +125,7 @@ public class TheatreUpdateSeatInventoryWriteScenariosTest {
                 { "available": false }
                 """;
 
-        mockMvc.perform(patch("/api/seats/theatre/{theatreId}/seat/{seatId}", 1L, 5L)
+        mockMvc.perform(patch("/api/v1/seats/theatre/{theatreId}/seat/{seatId}", 1L, 5L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(patchJson))
                 .andExpect(status().isOk())

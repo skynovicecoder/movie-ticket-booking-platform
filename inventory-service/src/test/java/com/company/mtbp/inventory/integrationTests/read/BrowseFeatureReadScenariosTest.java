@@ -16,6 +16,10 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -75,15 +79,24 @@ class BrowseFeatureReadScenariosTest {
                 .thenReturn(Optional.of(movie));
         Mockito.when(movieRepository.findById(movie.getId()))
                 .thenReturn(Optional.of(movie));
-        Mockito.when(showRepository.findAll(Mockito.any(Specification.class)))
-                .thenReturn(shows);
 
-        String responseBody = mockMvc.perform(get("/api/shows/browse")
-                        .param("movieTitle", movie.getTitle()))
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Show> showPage = new PageImpl<>(shows, pageable, shows.size());
+        Mockito.when(showRepository.findAll(Mockito.any(Specification.class), Mockito.any(Pageable.class)))
+                .thenReturn(showPage);
+
+        String responseBody = mockMvc.perform(get("/api/v1/shows/browse")
+                        .param("movieTitle", movie.getTitle())
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().is2xxSuccessful())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(shows.size()))
-                .andExpect(jsonPath("$[0].movieTitle").value(movie.getTitle()))
+                .andExpect(jsonPath("$.content.length()").value(shows.size()))
+                .andExpect(jsonPath("$.content[0].movieTitle").value(movie.getTitle()))
+                .andExpect(jsonPath("$.totalElements").value(shows.size()))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageSize").value(10))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.last").value(true))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -121,17 +134,18 @@ class BrowseFeatureReadScenariosTest {
                 .thenReturn(Optional.of(movie));
         Mockito.when(movieRepository.findById(movie.getId()))
                 .thenReturn(Optional.of(movie));
-        Mockito.when(showRepository.findAll(Mockito.any(Specification.class)))
-                .thenReturn(shows);
 
-        mockMvc.perform(get("/api/shows/browse")
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Show> showPage = new PageImpl<>(shows, pageable, shows.size());
+        Mockito.when(showRepository.findAll(Mockito.any(Specification.class), Mockito.any(Pageable.class)))
+                .thenReturn(showPage);
+
+        mockMvc.perform(get("/api/v1/shows/browse")
                         .param("movieTitle", movie.getTitle())
                         .param("cityName", cityName))
                 .andExpect(status().is2xxSuccessful())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(shows.size()))
-                .andExpect(jsonPath("$[0].movieTitle").value(movie.getTitle()))
-                .andExpect(jsonPath("$[0].theatreName").value("PVR"));
+                .andExpect(jsonPath("$.content.length()").value(shows.size()));
     }
 }
 

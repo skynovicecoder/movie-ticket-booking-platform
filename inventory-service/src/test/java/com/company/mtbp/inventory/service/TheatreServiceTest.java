@@ -7,6 +7,7 @@ import com.company.mtbp.inventory.entity.Theatre;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.TheatreMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.CityRepository;
 import com.company.mtbp.inventory.repository.SeatRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
@@ -15,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -137,13 +141,19 @@ class TheatreServiceTest {
 
     @Test
     void getAllTheatres_success() {
-        when(theatreRepository.findAll()).thenReturn(List.of(sampleTheatre));
-        when(theatreMapper.toDTOList(List.of(sampleTheatre))).thenReturn(List.of(sampleDTO));
+        Page<Theatre> theatrePage = new PageImpl<>(List.of(sampleTheatre));
+        when(theatreRepository.findAll(PageRequest.of(0, 10))).thenReturn(theatrePage);
+        when(theatreMapper.toDTOList(theatrePage.getContent())).thenReturn(List.of(sampleDTO));
 
-        List<TheatreDTO> list = theatreService.getAllTheatres();
+        PageResponse<TheatreDTO> result = theatreService.getAllTheatres(0, 10);
 
-        assertEquals(1, list.size());
-        assertEquals("PVR", list.getFirst().getName());
+        assertNotNull(result);
+        assertEquals(1, result.getContent().size());
+        assertEquals("PVR", result.getContent().getFirst().getName());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(0, result.getPageNumber());
+        assertTrue(result.isLast());
     }
 
     @Test

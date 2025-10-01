@@ -6,6 +6,7 @@ import com.company.mtbp.inventory.entity.Role;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.CustomerMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.CustomerRepository;
 import com.company.mtbp.inventory.repository.RoleRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -132,15 +136,21 @@ class CustomerServiceTest {
     }
 
     @Test
-    void getAllCustomers_returnsList() {
-        when(customerRepository.findAll()).thenReturn(List.of(sampleCustomer));
-        when(customerMapper.toDTOList(List.of(sampleCustomer))).thenReturn(List.of(sampleCustomerDTO));
+    void getAllCustomers_success() {
+        Page<Customer> customerPage = new PageImpl<>(List.of(sampleCustomer));
+        when(customerRepository.findAll(PageRequest.of(0, 10))).thenReturn(customerPage);
+        when(customerMapper.toDTOList(customerPage.getContent())).thenReturn(List.of(sampleCustomerDTO));
 
-        List<CustomerDTO> result = customerService.getAllCustomers();
+        PageResponse<CustomerDTO> result = customerService.getAllCustomers(0, 10);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("John Doe", result.getFirst().getName());
+        assertEquals(1, result.getContent().size());
+        assertEquals("John Doe", result.getContent().getFirst().getName());
+        assertEquals(sampleCustomerDTO.getEmail(), result.getContent().getFirst().getEmail());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(0, result.getPageNumber());
+        assertTrue(result.isLast());
     }
 
     @Test

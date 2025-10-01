@@ -4,8 +4,12 @@ import com.company.mtbp.inventory.dto.MovieDTO;
 import com.company.mtbp.inventory.entity.Movie;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.mapper.MovieMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.MovieRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -57,9 +61,20 @@ public class MovieService {
         return saveMovie(movieDTO);
     }
 
-    public List<MovieDTO> getAllMovies() {
-        List<Movie> movies = movieRepository.findAll();
-        return movieMapper.toDTOList(movies);
+    public PageResponse<MovieDTO> getAllMovies(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Movie> moviePage = movieRepository.findAll(pageable);
+
+        List<MovieDTO> movieDTOs = movieMapper.toDTOList(moviePage.getContent());
+
+        return new PageResponse<>(
+                movieDTOs,
+                moviePage.getNumber(),
+                moviePage.getSize(),
+                moviePage.getTotalElements(),
+                moviePage.getTotalPages(),
+                moviePage.isLast()
+        );
     }
 
     public Optional<MovieDTO> getMovieById(Long id) {

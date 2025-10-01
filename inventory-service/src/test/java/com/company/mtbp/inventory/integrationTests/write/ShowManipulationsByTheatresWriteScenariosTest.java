@@ -93,7 +93,7 @@ public class ShowManipulationsByTheatresWriteScenariosTest {
         Mockito.when(showRepository.save(any(Show.class))).thenReturn(show);
         Mockito.when(seatService.updateShowForTheatre(anyLong(), anyLong())).thenReturn(5);
 
-        mockMvc.perform(post("/api/shows")
+        mockMvc.perform(post("/api/v1/shows")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(showDTO)))
                 .andExpect(status().isCreated())
@@ -121,7 +121,7 @@ public class ShowManipulationsByTheatresWriteScenariosTest {
 
         String patchJson = "{ \"showDate\": \"2025-10-02\", \"startTime\": \"20:00\", \"endTime\": \"23:00\" }";
 
-        mockMvc.perform(patch("/api/shows/update/{showId}", show.getId())
+        mockMvc.perform(patch("/api/v1/shows/update/{showId}", show.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(patchJson))
                 .andExpect(status().isOk())
@@ -134,7 +134,7 @@ public class ShowManipulationsByTheatresWriteScenariosTest {
     void deleteShow_shouldReturnNoContent() throws Exception {
         Mockito.doNothing().when(showRepository).deleteById(show.getId());
 
-        mockMvc.perform(delete("/api/shows/{showId}", show.getId()))
+        mockMvc.perform(delete("/api/v1/shows/{showId}", show.getId()))
                 .andExpect(status().isNoContent());
     }
 }

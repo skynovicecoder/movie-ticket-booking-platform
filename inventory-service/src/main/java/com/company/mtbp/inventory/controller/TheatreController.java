@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.TheatreDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.TheatreService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/theatres")
+@RequestMapping("/api/v1/theatres")
 public class TheatreController {
 
     private final TheatreService theatreService;
@@ -39,12 +40,12 @@ public class TheatreController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TheatreDTO>> getAllTheatres() {
-        List<TheatreDTO> theatres = theatreService.getAllTheatres();
-        if (theatres.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(theatres);
+    public ResponseEntity<PageResponse<TheatreDTO>> getAllTheatres(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        PageResponse<TheatreDTO> response = theatreService.getAllTheatres(page, size);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

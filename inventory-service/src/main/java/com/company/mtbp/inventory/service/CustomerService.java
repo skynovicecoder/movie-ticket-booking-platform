@@ -6,9 +6,13 @@ import com.company.mtbp.inventory.entity.Role;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.CustomerMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.CustomerRepository;
 import com.company.mtbp.inventory.repository.RoleRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -80,8 +84,20 @@ public class CustomerService {
         return saveCustomer(customerDTO);
     }
 
-    public List<CustomerDTO> getAllCustomers() {
-        return customerMapper.toDTOList(customerRepository.findAll());
+    public PageResponse<CustomerDTO> getAllCustomers(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Customer> customerPage = customerRepository.findAll(pageable);
+
+        List<CustomerDTO> customerDTOs = customerMapper.toDTOList(customerPage.getContent());
+
+        return new PageResponse<>(
+                customerDTOs,
+                customerPage.getNumber(),
+                customerPage.getSize(),
+                customerPage.getTotalElements(),
+                customerPage.getTotalPages(),
+                customerPage.isLast()
+        );
     }
 
     public void deleteCustomer(Long id) {

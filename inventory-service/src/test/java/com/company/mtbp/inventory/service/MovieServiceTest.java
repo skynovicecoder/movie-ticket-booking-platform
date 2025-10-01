@@ -4,12 +4,16 @@ import com.company.mtbp.inventory.dto.MovieDTO;
 import com.company.mtbp.inventory.entity.Movie;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.mapper.MovieMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.MovieRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -86,14 +90,20 @@ class MovieServiceTest {
     }
 
     @Test
-    void getAllMovies_returnsList() {
-        when(movieRepository.findAll()).thenReturn(List.of(sampleMovie));
-        when(movieMapper.toDTOList(List.of(sampleMovie))).thenReturn(List.of(sampleMovieDTO));
+    void getAllMovies_success() {
+        Page<Movie> moviePage = new PageImpl<>(List.of(sampleMovie));
+        when(movieRepository.findAll(PageRequest.of(0, 10))).thenReturn(moviePage);
+        when(movieMapper.toDTOList(moviePage.getContent())).thenReturn(List.of(sampleMovieDTO));
 
-        List<MovieDTO> result = movieService.getAllMovies();
+        PageResponse<MovieDTO> result = movieService.getAllMovies(0, 10);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
+        assertEquals(sampleMovieDTO.getTitle(), result.getContent().getFirst().getTitle());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(0, result.getPageNumber());
+        assertTrue(result.isLast());
     }
 
     @Test

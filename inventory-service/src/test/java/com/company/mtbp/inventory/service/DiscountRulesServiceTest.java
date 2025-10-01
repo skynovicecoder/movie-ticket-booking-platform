@@ -9,6 +9,7 @@ import com.company.mtbp.inventory.enums.DiscountType;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.DiscountRulesMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.CityRepository;
 import com.company.mtbp.inventory.repository.DiscountRulesRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
@@ -17,6 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.*;
 
@@ -122,14 +126,20 @@ class DiscountRulesServiceTest {
     }
 
     @Test
-    void getAllDiscounts_returnsList() {
-        when(discountRulesRepository.findAll()).thenReturn(List.of(sampleDiscount));
-        when(discountRulesMapper.toDTOList(List.of(sampleDiscount))).thenReturn(List.of(sampleDiscountDTO));
+    void getAllDiscounts_success() {
+        Page<DiscountRules> discountPage = new PageImpl<>(List.of(sampleDiscount));
+        when(discountRulesRepository.findAll(PageRequest.of(0, 10))).thenReturn(discountPage);
+        when(discountRulesMapper.toDTOList(discountPage.getContent())).thenReturn(List.of(sampleDiscountDTO));
 
-        List<DiscountRulesDTO> result = discountRulesService.getAllDiscounts();
+        PageResponse<DiscountRulesDTO> result = discountRulesService.getAllDiscounts(0, 10);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
+        assertEquals(sampleDiscountDTO.getName(), result.getContent().getFirst().getName());
+        assertEquals(1, result.getTotalElements());
+        assertEquals(1, result.getTotalPages());
+        assertEquals(0, result.getPageNumber());
+        assertTrue(result.isLast());
     }
 
     @Test

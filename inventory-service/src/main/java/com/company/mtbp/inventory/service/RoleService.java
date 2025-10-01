@@ -4,7 +4,11 @@ import com.company.mtbp.inventory.dto.RoleDTO;
 import com.company.mtbp.inventory.entity.Role;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.RoleRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -36,11 +40,23 @@ public class RoleService {
         return toDTO(role);
     }
 
-    public List<RoleDTO> getAllRoles() {
-        return roleRepository.findAll()
+    public PageResponse<RoleDTO> getAllRoles(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Role> rolePage = roleRepository.findAll(pageable);
+
+        List<RoleDTO> dtos = rolePage.getContent()
                 .stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
+
+        return new PageResponse<>(
+                dtos,
+                rolePage.getNumber(),
+                rolePage.getSize(),
+                rolePage.getTotalElements(),
+                rolePage.getTotalPages(),
+                rolePage.isLast()
+        );
     }
 
     public RoleDTO patchRole(Long id, Map<String, Object> updates) {

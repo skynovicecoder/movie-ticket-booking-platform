@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.MovieDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.MovieService;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +54,7 @@ class MovieControllerTest {
     void createMovie_returnsCreatedMovie() throws Exception {
         Mockito.when(movieService.saveMovie(any(MovieDTO.class))).thenReturn(sampleMovie);
 
-        mockMvc.perform(post("/api/movies")
+        mockMvc.perform(post("/api/v1/movies")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"" + sampleMovie.getTitle() + "\"," +
                                 "\"genre\":\"" + sampleMovie.getGenre() + "\"," +
@@ -75,7 +76,7 @@ class MovieControllerTest {
         Mockito.when(movieService.getMovieById(1L)).thenReturn(Optional.of(sampleMovie));
         Mockito.when(movieService.patchMovie(any(MovieDTO.class), any(Map.class))).thenReturn(updated);
 
-        mockMvc.perform(patch("/api/movies/update/1")
+        mockMvc.perform(patch("/api/v1/movies/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"Updated Title\"}"))
                 .andExpect(status().isOk())
@@ -86,28 +87,41 @@ class MovieControllerTest {
     void patchMovie_returnsNotFound_whenMovieMissing() throws Exception {
         Mockito.when(movieService.getMovieById(99L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(patch("/api/movies/update/99")
+        mockMvc.perform(patch("/api/v1/movies/update/99")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"Updated Title\"}"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void getAllMovies_returnsList() throws Exception {
-        List<MovieDTO> movies = List.of(sampleMovie);
-        Mockito.when(movieService.getAllMovies()).thenReturn(movies);
+    void getAllMovies_returnsPaginatedResponse() throws Exception {
+        PageResponse<MovieDTO> response = new PageResponse<>(
+                List.of(sampleMovie),
+                0, 10,
+                1L,
+                1,
+                true
+        );
 
-        mockMvc.perform(get("/api/movies"))
+        Mockito.when(movieService.getAllMovies(0, 10)).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/movies")
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(movies.size()))
-                .andExpect(jsonPath("$[0].title").value(sampleMovie.getTitle()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].title").value(sampleMovie.getTitle()))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
     void getMovieById_returnsMovie() throws Exception {
         Mockito.when(movieService.getMovieById(1L)).thenReturn(Optional.of(sampleMovie));
 
-        mockMvc.perform(get("/api/movies/1"))
+        mockMvc.perform(get("/api/v1/movies/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(sampleMovie.getId()))
                 .andExpect(jsonPath("$.title").value(sampleMovie.getTitle()));
@@ -117,7 +131,7 @@ class MovieControllerTest {
     void getMovieById_returnsNotFound_whenMovieMissing() throws Exception {
         Mockito.when(movieService.getMovieById(99L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/movies/99"))
+        mockMvc.perform(get("/api/v1/movies/99"))
                 .andExpect(status().isNotFound());
     }
 
@@ -126,7 +140,7 @@ class MovieControllerTest {
         Mockito.when(movieService.getMovieByTitle(sampleMovie.getTitle()))
                 .thenReturn(Optional.of(sampleMovie));
 
-        mockMvc.perform(get("/api/movies/by-title")
+        mockMvc.perform(get("/api/v1/movies/by-title")
                         .param("title", sampleMovie.getTitle()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value(sampleMovie.getTitle()));
@@ -136,7 +150,7 @@ class MovieControllerTest {
     void getMovieByTitle_returnsNotFound_whenMovieMissing() throws Exception {
         Mockito.when(movieService.getMovieByTitle("Unknown")).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/movies/by-title")
+        mockMvc.perform(get("/api/v1/movies/by-title")
                         .param("title", "Unknown"))
                 .andExpect(status().isNotFound());
     }

@@ -1,17 +1,17 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.MovieDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.MovieService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/movies")
+@RequestMapping("/api/v1/movies")
 public class MovieController {
 
     private final MovieService movieService;
@@ -42,9 +42,12 @@ public class MovieController {
     }
 
     @GetMapping
-    public ResponseEntity<List<MovieDTO>> getAllMovies() {
-        List<MovieDTO> movies = movieService.getAllMovies();
-        return ResponseEntity.ok(movies);
+    public ResponseEntity<PageResponse<MovieDTO>> getAllMovies(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        PageResponse<MovieDTO> response = movieService.getAllMovies(page, size);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")

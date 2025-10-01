@@ -1,6 +1,7 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.CityDTO;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.CityService;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,7 +52,7 @@ class CityControllerTest {
     void createCity_returnsCreatedCity() throws Exception {
         Mockito.when(cityService.saveCity(any(CityDTO.class))).thenReturn(sampleCity);
 
-        mockMvc.perform(post("/api/cities")
+        mockMvc.perform(post("/api/v1/cities")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"" + sampleCity.getName() + "\"}"))
                 .andExpect(status().isCreated())
@@ -60,21 +61,33 @@ class CityControllerTest {
     }
 
     @Test
-    void getAllCities_returnsCitiesList() throws Exception {
-        List<CityDTO> cities = List.of(sampleCity);
-        Mockito.when(cityService.getAllCities()).thenReturn(cities);
+    void getAllCities_returnsPaginatedResponse() throws Exception {
+        PageResponse<CityDTO> response = new PageResponse<>(
+                List.of(sampleCity),
+                0, 10,
+                1L,
+                1,
+                true
+        );
 
-        mockMvc.perform(get("/api/cities"))
+        Mockito.when(cityService.getAllCities(0, 10)).thenReturn(response);
+
+        mockMvc.perform(get("/api/v1/cities")
+                        .param("page", "0")
+                        .param("size", "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(cities.size()))
-                .andExpect(jsonPath("$[0].name").value(sampleCity.getName()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.pageNumber").value(0))
+                .andExpect(jsonPath("$.last").value(true));
     }
 
     @Test
     void getCityById_returnsCity() throws Exception {
         Mockito.when(cityService.getCityById(1L)).thenReturn(Optional.of(sampleCity));
 
-        mockMvc.perform(get("/api/cities/1"))
+        mockMvc.perform(get("/api/v1/cities/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(sampleCity.getId()))
                 .andExpect(jsonPath("$.name").value(sampleCity.getName()));
@@ -84,7 +97,7 @@ class CityControllerTest {
     void getCityById_returnsNotFound_whenCityMissing() throws Exception {
         Mockito.when(cityService.getCityById(99L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/cities/99"))
+        mockMvc.perform(get("/api/v1/cities/99"))
                 .andExpect(status().isNotFound());
     }
 
@@ -97,7 +110,7 @@ class CityControllerTest {
         Mockito.when(cityService.getCityById(1L)).thenReturn(Optional.of(sampleCity));
         Mockito.when(cityService.patchCity(any(CityDTO.class), any(Map.class))).thenReturn(updatedCity);
 
-        mockMvc.perform(patch("/api/cities/update/1")
+        mockMvc.perform(patch("/api/v1/cities/update/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"UpdatedName\"}"))
                 .andExpect(status().isOk())
@@ -108,7 +121,7 @@ class CityControllerTest {
     void patchCity_returnsNotFound_whenCityMissing() throws Exception {
         Mockito.when(cityService.getCityById(99L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(patch("/api/cities/update/99")
+        mockMvc.perform(patch("/api/v1/cities/update/99")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"UpdatedName\"}"))
                 .andExpect(status().isNotFound());
@@ -116,7 +129,7 @@ class CityControllerTest {
 
     @Test
     void deleteCity_returnsNoContent() throws Exception {
-        mockMvc.perform(delete("/api/cities/1"))
+        mockMvc.perform(delete("/api/v1/cities/1"))
                 .andExpect(status().isNoContent());
         Mockito.verify(cityService).deleteCity(1L);
     }

@@ -7,11 +7,15 @@ import com.company.mtbp.inventory.entity.Theatre;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
 import com.company.mtbp.inventory.mapper.TheatreMapper;
+import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.repository.CityRepository;
 import com.company.mtbp.inventory.repository.SeatRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Field;
@@ -101,9 +105,20 @@ public class TheatreService {
         return saveTheatre(theatreDTO);
     }
 
-    public List<TheatreDTO> getAllTheatres() {
-        List<Theatre> theatres = theatreRepository.findAll();
-        return theatreMapper.toDTOList(theatres);
+    public PageResponse<TheatreDTO> getAllTheatres(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Theatre> theatrePage = theatreRepository.findAll(pageable);
+
+        List<TheatreDTO> theatreDTOs = theatreMapper.toDTOList(theatrePage.getContent());
+
+        return new PageResponse<>(
+                theatreDTOs,
+                theatrePage.getNumber(),
+                theatrePage.getSize(),
+                theatrePage.getTotalElements(),
+                theatrePage.getTotalPages(),
+                theatrePage.isLast()
+        );
     }
 
     public Optional<TheatreDTO> getTheatreById(Long id) {
