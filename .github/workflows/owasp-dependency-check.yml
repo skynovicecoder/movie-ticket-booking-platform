@@ -33,6 +33,9 @@ jobs:
       - name: Set NVD API Key
         run: echo "NVD_API_KEY=${{ secrets.NVD_API_KEY }}" >> $GITHUB_ENV
 
+      - name: Build all modules
+        run: mvn clean install -B -DskipTests
+
       - name: Run OWASP Dependency Check (Quick Mode)
         if: github.event_name == 'pull_request'
         run: mvn org.owasp:dependency-check-maven:check -DskipProvidedScope=true -DskipTestScope=true
