@@ -9,6 +9,11 @@
         <artifactId>movie-ticket-booking-platform</artifactId>
         <version>1.0.0</version>
     </parent>
+
+    <groupId>com.company.mtbp.common</groupId>
     <artifactId>mtbp-shared-utils</artifactId>
+    <version>1.0.0</version>
+    <name>common-utils-service</name>
+
     <packaging>jar</packaging>
 </project>

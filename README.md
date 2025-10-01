@@ -47,8 +47,8 @@ Each service runs on a different port:
 Service	                        Port
 Customer Service	            8081
 Booking Service	                8082
-Payment Service	                8083
-Inventory Service	            8084
+Inventory Service	            8083
+Payment Service	                8084
 Theatre Partner Service	        8085
 
 Option 1: Run services individually

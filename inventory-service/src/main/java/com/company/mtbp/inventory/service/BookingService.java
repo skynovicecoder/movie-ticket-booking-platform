@@ -5,17 +5,22 @@ import com.company.mtbp.inventory.dto.CustomerDTO;
 import com.company.mtbp.inventory.dto.ShowDTO;
 import com.company.mtbp.inventory.entity.*;
 import com.company.mtbp.inventory.enums.DiscountType;
+import com.company.mtbp.inventory.events.InventoryCreatedEvent;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.BookingAlreadyCancelledException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
+import com.company.mtbp.inventory.kafka.InventoryEventPublisher;
 import com.company.mtbp.inventory.mapper.BookingMapper;
 import com.company.mtbp.inventory.mapper.CustomerMapper;
+import com.company.mtbp.inventory.mapper.InventoryCreatedEventMapper;
 import com.company.mtbp.inventory.mapper.ShowMapper;
 import com.company.mtbp.inventory.repository.BookingDetailRepository;
 import com.company.mtbp.inventory.repository.BookingRepository;
 import com.company.mtbp.inventory.repository.DiscountRulesRepository;
 import com.company.mtbp.inventory.repository.SeatRepository;
 import com.company.mtbp.inventory.utils.JsonUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -34,10 +39,13 @@ public class BookingService {
     private final ShowMapper showMapper;
     private final BookingMapper bookingMapper;
     private final DiscountRulesRepository discountRulesRepository;
+    private final InventoryEventPublisher inventoryEventPublisher;
+    private final InventoryCreatedEventMapper inventoryCreatedEventMapper;
+    private final ObjectMapper objectMapper;
 
     public BookingService(BookingRepository bookingRepository,
                           BookingDetailRepository bookingDetailRepository,
-                          SeatRepository seatRepository, CustomerMapper customerMapper, ShowMapper showMapper, BookingMapper bookingMapper, DiscountRulesRepository discountRulesRepository) {
+                          SeatRepository seatRepository, CustomerMapper customerMapper, ShowMapper showMapper, BookingMapper bookingMapper, DiscountRulesRepository discountRulesRepository, InventoryEventPublisher inventoryEventPublisher, InventoryCreatedEventMapper inventoryCreatedEventMapper, ObjectMapper objectMapper) {
         this.bookingRepository = bookingRepository;
         this.bookingDetailRepository = bookingDetailRepository;
         this.seatRepository = seatRepository;
@@ -45,6 +53,9 @@ public class BookingService {
         this.showMapper = showMapper;
         this.bookingMapper = bookingMapper;
         this.discountRulesRepository = discountRulesRepository;
+        this.inventoryEventPublisher = inventoryEventPublisher;
+        this.inventoryCreatedEventMapper = inventoryCreatedEventMapper;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -61,7 +72,18 @@ public class BookingService {
         booking.setTotalAmount(total);
         bookingRepository.save(booking);
 
+        publishInventoryEvent(booking);
+
         return bookingMapper.toDTO(booking);
+    }
+
+    private void publishInventoryEvent(Booking booking) {
+        InventoryCreatedEvent event = inventoryCreatedEventMapper.toEvent(booking);
+        try {
+            inventoryEventPublisher.sendMessage(objectMapper.writeValueAsString(event));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Transactional
@@ -79,6 +101,8 @@ public class BookingService {
 
         booking.setTotalAmount(total);
         bookingRepository.save(booking);
+
+        publishInventoryEvent(booking);
 
         return bookingMapper.toDTO(booking);
     }
@@ -102,6 +126,8 @@ public class BookingService {
         releaseAllSeats(booking.getBookingDetails());
 
         bookingRepository.save(booking);
+
+        publishInventoryEvent(booking);
 
         return bookingMapper.toDTO(booking);
     }

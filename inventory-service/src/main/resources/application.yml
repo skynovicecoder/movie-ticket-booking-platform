@@ -3,6 +3,27 @@ spring:
     active: dev
   application:
     name: mtbp.inventory
+  cloud:
+    stream:
+      default-binder: kafka
+      bindings:
+        inventoryCreated-out-0:
+          destination: mtbp-shared-topic
+          content-type: application/json
+      kafka:
+        binder:
+          brokers: localhost:9092
+          auto-create-topics: true
+
+  kafka:
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    admin:
+      bootstrap-servers: localhost:9092
+      properties:
+        retries: 3
+        request.timeout.ms: 10000
 
 springdoc:
   api-docs:
@@ -21,6 +42,10 @@ management:
   endpoint:
     health:
       show-details: always
+
+inventory:
+  kafka:
+    topic: mtbp-shared-topic
 
 server:
   port: 8083

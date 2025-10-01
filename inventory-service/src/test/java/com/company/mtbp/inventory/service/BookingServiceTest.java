@@ -4,16 +4,21 @@ import com.company.mtbp.inventory.dto.BookingDTO;
 import com.company.mtbp.inventory.dto.CustomerDTO;
 import com.company.mtbp.inventory.dto.ShowDTO;
 import com.company.mtbp.inventory.entity.*;
+import com.company.mtbp.inventory.events.InventoryCreatedEvent;
 import com.company.mtbp.inventory.exception.BadRequestException;
 import com.company.mtbp.inventory.exception.BookingAlreadyCancelledException;
 import com.company.mtbp.inventory.exception.ResourceNotFoundException;
+import com.company.mtbp.inventory.kafka.InventoryEventPublisher;
 import com.company.mtbp.inventory.mapper.BookingMapper;
 import com.company.mtbp.inventory.mapper.CustomerMapper;
+import com.company.mtbp.inventory.mapper.InventoryCreatedEventMapper;
 import com.company.mtbp.inventory.mapper.ShowMapper;
 import com.company.mtbp.inventory.repository.BookingDetailRepository;
 import com.company.mtbp.inventory.repository.BookingRepository;
 import com.company.mtbp.inventory.repository.DiscountRulesRepository;
 import com.company.mtbp.inventory.repository.SeatRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,6 +48,14 @@ class BookingServiceTest {
     ShowMapper showMapper;
     @Mock
     BookingMapper bookingMapper;
+    @Mock
+    InventoryCreatedEventMapper inventoryCreatedEventMapper;
+    @Mock
+    private InventoryEventPublisher inventoryEventPublisher;
+
+    @Mock
+    ObjectMapper objectMapper;
+
     @Mock
     DiscountRulesRepository discountRulesRepository;
 
@@ -89,13 +102,25 @@ class BookingServiceTest {
     }
 
     @Test
-    void bookTickets_success() {
+    void bookTickets_success() throws JsonProcessingException {
         when(customerMapper.toEntity(sampleCustomerDTO)).thenReturn(sampleCustomer);
         when(showMapper.toEntity(sampleShowDTO)).thenReturn(sampleShow);
         when(seatRepository.findAllById(List.of(101L))).thenReturn(List.of(sampleSeat));
         when(bookingRepository.save(any())).thenReturn(sampleBooking);
         when(bookingMapper.toDTO(sampleBooking)).thenReturn(sampleBookingDTO);
         when(discountRulesRepository.findByActiveTrue()).thenReturn(List.of());
+
+        InventoryCreatedEvent sampleEvent = new InventoryCreatedEvent(
+                sampleBooking.getId(),
+                sampleCustomer,
+                sampleShow,
+                sampleBooking.getBookingTime(),
+                sampleBooking.getTotalAmount(),
+                sampleBooking.getStatus(),
+                sampleBooking.getBookingDetails()
+        );
+        when(inventoryCreatedEventMapper.toEvent(sampleBooking)).thenReturn(sampleEvent);
+        when(objectMapper.writeValueAsString(sampleEvent)).thenReturn("{\"id\":1}");
 
         BookingDTO result = bookingService.bookTickets(sampleCustomerDTO, sampleShowDTO, List.of(101L));
 
@@ -104,6 +129,7 @@ class BookingServiceTest {
         assertFalse(sampleSeat.getAvailable());
         verify(bookingRepository, atLeastOnce()).save(any());
         verify(bookingDetailRepository).save(any());
+        verify(inventoryEventPublisher).sendMessage("{\"id\":1}");
     }
 
     @Test
@@ -117,7 +143,7 @@ class BookingServiceTest {
     }
 
     @Test
-    void bulkBookTickets_success() {
+    void bulkBookTickets_success() throws JsonProcessingException {
         when(customerMapper.toEntity(sampleCustomerDTO)).thenReturn(sampleCustomer);
         when(showMapper.toEntity(sampleShowDTO)).thenReturn(sampleShow);
         when(seatRepository.findByAvailableTrue()).thenReturn(List.of(sampleSeat));
@@ -125,11 +151,24 @@ class BookingServiceTest {
         when(bookingMapper.toDTO(sampleBooking)).thenReturn(sampleBookingDTO);
         when(discountRulesRepository.findByActiveTrue()).thenReturn(List.of());
 
+        InventoryCreatedEvent sampleEvent = new InventoryCreatedEvent(
+                sampleBooking.getId(),
+                sampleCustomer,
+                sampleShow,
+                sampleBooking.getBookingTime(),
+                sampleBooking.getTotalAmount(),
+                sampleBooking.getStatus(),
+                sampleBooking.getBookingDetails()
+        );
+        when(inventoryCreatedEventMapper.toEvent(sampleBooking)).thenReturn(sampleEvent);
+        when(objectMapper.writeValueAsString(sampleEvent)).thenReturn("{\"id\":1}");
+
         BookingDTO result = bookingService.bulkBookTickets(sampleCustomerDTO, sampleShowDTO, 1);
 
         assertNotNull(result);
         assertEquals(1L, result.getId());
         verify(bookingRepository, atLeastOnce()).save(any());
+        verify(inventoryEventPublisher).sendMessage("{\"id\":1}");
     }
 
     @Test
@@ -142,18 +181,31 @@ class BookingServiceTest {
     }
 
     @Test
-    void cancelBooking_success() {
+    void cancelBooking_success() throws JsonProcessingException {
         sampleBooking.setBookingDetails(List.of(
                 BookingDetail.builder().seat(sampleSeat).build()
         ));
         when(bookingRepository.findById(1L)).thenReturn(Optional.of(sampleBooking));
         when(bookingMapper.toDTO(sampleBooking)).thenReturn(sampleBookingDTO);
 
+        InventoryCreatedEvent sampleEvent = new InventoryCreatedEvent(
+                sampleBooking.getId(),
+                sampleCustomer,
+                sampleShow,
+                sampleBooking.getBookingTime(),
+                sampleBooking.getTotalAmount(),
+                sampleBooking.getStatus(),
+                sampleBooking.getBookingDetails()
+        );
+        when(inventoryCreatedEventMapper.toEvent(sampleBooking)).thenReturn(sampleEvent);
+        when(objectMapper.writeValueAsString(sampleEvent)).thenReturn("{\"id\":1}");
+
         BookingDTO result = bookingService.cancelBooking(1L);
 
         assertEquals("BOOKED".equals(sampleBooking.getStatus()) ? "CANCELLED" : sampleBooking.getStatus(), sampleBooking.getStatus());
         assertTrue(sampleSeat.getAvailable());
         assertNotNull(result);
+        verify(inventoryEventPublisher).sendMessage("{\"id\":1}");
     }
 
     @Test

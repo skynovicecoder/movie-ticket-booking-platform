@@ -9,7 +9,11 @@
         <artifactId>movie-ticket-booking-platform</artifactId>
         <version>1.0.0</version>
     </parent>
+
+    <groupId>com.company.mtbp.customer</groupId>
     <artifactId>customer-service</artifactId>
+    <version>1.0.0</version>
+    <name>mtbp-customer-service</name>
 
     <dependencies>
         <dependency>

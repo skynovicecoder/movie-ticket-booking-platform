@@ -3,6 +3,7 @@ package com.company.mtbp.inventory.exception;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,10 +55,11 @@ class GlobalExceptionHandlerTest {
     void handleGeneralException_returnsInternalServerErrorStatus() {
         Exception ex = new Exception("Something went wrong");
 
-        ResponseEntity<String> response = handler.handleGeneralException(ex);
+        ResponseEntity<ProblemDetail> response = handler.handleGeneralException(ex);
 
         assertNotNull(response);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("Internal server error", response.getBody());
+        assertNotNull(response.getBody());
+        assertEquals("Inventory Error Details : Something went wrong", response.getBody().getDetail());
     }
 }
