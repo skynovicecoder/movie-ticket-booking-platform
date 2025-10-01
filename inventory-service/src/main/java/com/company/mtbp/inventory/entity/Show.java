@@ -40,7 +40,7 @@ public class Show {
 
     private String showType; // morning, afternoon, evening
 
-    @OneToMany(mappedBy = "show")
+    @OneToMany(mappedBy = "show", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<Seat> seats;
 

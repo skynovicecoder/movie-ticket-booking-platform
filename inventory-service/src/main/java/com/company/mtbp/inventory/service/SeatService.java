@@ -192,7 +192,7 @@ public class SeatService {
     public int updateShowForTheatre(Long theatreId, Long showId) {
         Show show = showRepository.findById(showId)
                 .orElseThrow(() -> new RuntimeException("Show not found"));
-        int updatedRows = seatRepository.updateShowIdByTheatreId(theatreId, show);
+        int updatedRows = seatRepository.updateShowIdByTheatreId(theatreId, show.getId());
         log.debug("Updated rows: {}", updatedRows);
         return updatedRows;
     }
