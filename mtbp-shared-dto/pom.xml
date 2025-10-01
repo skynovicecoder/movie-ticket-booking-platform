@@ -14,8 +14,8 @@
     <artifactId>mtbp-shared-dto</artifactId>
     <version>1.0.0</version>
     <name>shared-dto-service</name>
-
     <packaging>jar</packaging>
+
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
