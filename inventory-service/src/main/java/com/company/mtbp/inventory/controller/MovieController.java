@@ -1,8 +1,8 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.MovieDTO;
-import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.MovieService;
+import com.company.mtbp.shared.dto.PageResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
