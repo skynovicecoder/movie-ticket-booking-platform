@@ -47,21 +47,7 @@ public class ShowService {
 
     @Transactional
     public ShowDTO saveShow(ShowDTO showDTO) {
-        Show show = showMapper.toEntity(showDTO);
-
-        if (showDTO.getMovieId() != null) {
-            Movie movie = movieRepository.findById(showDTO.getMovieId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Movie not found with id: " + showDTO.getMovieId()));
-            show.setMovie(movie);
-        }
-
-        if (showDTO.getTheatreId() != null) {
-            Theatre theatre = theatreRepository.findById(showDTO.getTheatreId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Theatre not found with id: " + showDTO.getTheatreId()));
-            show.setTheatre(theatre);
-        }
-
-        Show savedShow = showRepository.save(show);
+        Show savedShow = saveOrUpdateShowEntity(showDTO);
 
         int numberOfRowsUpdated = seatService.updateShowForTheatre(showDTO.getTheatreId(), savedShow.getId());
         log.debug("Number Of Rows Updated : {}", numberOfRowsUpdated);
@@ -69,6 +55,7 @@ public class ShowService {
         return showMapper.toDTO(savedShow);
     }
 
+    @Transactional
     public ShowDTO patchShow(ShowDTO showDTO, Map<String, Object> updates) {
         updates.forEach((key, value) -> {
             try {
@@ -87,7 +74,28 @@ public class ShowService {
             }
         });
 
-        return saveShow(showDTO);
+        Show updatedShow = saveOrUpdateShowEntity(showDTO);
+        return showMapper.toDTO(updatedShow);
+    }
+
+    private Show saveOrUpdateShowEntity(ShowDTO showDTO) {
+        Show show = showMapper.toEntity(showDTO);
+
+        if (showDTO.getMovieId() != null) {
+            Movie movie = movieRepository.findById(showDTO.getMovieId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Movie not found with id: " + showDTO.getMovieId()));
+            show.setMovie(movie);
+        }
+
+        if (showDTO.getTheatreId() != null) {
+            Theatre theatre = theatreRepository.findById(showDTO.getTheatreId())
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Theatre not found with id: " + showDTO.getTheatreId()));
+            show.setTheatre(theatre);
+        }
+
+        return showRepository.save(show);
     }
 
     public PageResponse<ShowDTO> getShows(MovieDTO movieDTO, String cityName, LocalDate date, int page, int size) {

@@ -121,14 +121,12 @@ class ShowServiceTest {
         when(movieRepository.findById(1L)).thenReturn(Optional.of(sampleMovie));
         when(theatreRepository.findById(1L)).thenReturn(Optional.of(sampleTheatre));
         when(showRepository.save(sampleShow)).thenReturn(sampleShow);
-        when(seatService.updateShowForTheatre(1L, 1L)).thenReturn(5);
         when(showMapper.toDTO(sampleShow)).thenReturn(sampleShowDTO);
 
         ShowDTO updated = showService.patchShow(sampleShowDTO, updates);
 
         assertNotNull(updated);
         verify(showRepository).save(sampleShow);
-        verify(seatService).updateShowForTheatre(1L, 1L);
     }
 
     @Test

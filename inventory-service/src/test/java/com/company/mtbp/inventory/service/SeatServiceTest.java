@@ -209,7 +209,7 @@ class SeatServiceTest {
     @Test
     void updateShowForTheatre_success() {
         when(showRepository.findById(1L)).thenReturn(Optional.of(sampleShow));
-        when(seatRepository.updateShowIdByTheatreId(1L, sampleShow)).thenReturn(5);
+        when(seatRepository.updateShowIdByTheatreId(1L, sampleShow.getId())).thenReturn(5);
 
         int updated = seatService.updateShowForTheatre(1L, 1L);
 
