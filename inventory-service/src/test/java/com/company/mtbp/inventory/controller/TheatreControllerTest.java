@@ -1,8 +1,8 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.TheatreDTO;
-import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.TheatreService;
+import com.company.mtbp.shared.dto.PageResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

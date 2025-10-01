@@ -1,8 +1,8 @@
 package com.company.mtbp.inventory.controller;
 
 import com.company.mtbp.inventory.dto.CustomerDTO;
-import com.company.mtbp.inventory.pagedto.PageResponse;
 import com.company.mtbp.inventory.service.CustomerService;
+import com.company.mtbp.shared.dto.PageResponse;
 import com.github.javafaker.Faker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

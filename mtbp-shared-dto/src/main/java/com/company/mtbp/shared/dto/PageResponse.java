@@ -1,4 +1,4 @@
-package com.company.mtbp.inventory.pagedto;
+package com.company.mtbp.shared.dto;
 
 import lombok.Getter;
 import lombok.Setter;
