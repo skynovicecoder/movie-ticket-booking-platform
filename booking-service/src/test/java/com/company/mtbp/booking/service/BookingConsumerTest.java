@@ -35,10 +35,8 @@ class BookingConsumerTest {
                   "id": 101,
                   "status": "CONFIRMED",
                   "totalAmount": 250.75,
-                  "customer": {
-                    "name": "John Doe",
-                    "email": "john.doe@example.com"
-                  }
+                  "customerId": 1,
+                  "showId": 1
                 }
                 """;
 
@@ -47,10 +45,8 @@ class BookingConsumerTest {
         List<ILoggingEvent> logs = listAppender.list;
 
         assertThat(logs).anyMatch(e -> e.getFormattedMessage()
-                .contains("Parsed from JsonNode -> id=101, status=CONFIRMED, totalAmount=250.75"));
+                .contains("Parsed from JsonNode -> id=101, status=CONFIRMED, totalAmount=250.75, customerId=1, showId=1"));
 
-        assertThat(logs).anyMatch(e -> e.getFormattedMessage()
-                .contains("Customer name: John Doe"));
     }
 
     @Test
@@ -59,7 +55,9 @@ class BookingConsumerTest {
                 {
                   "id": 202,
                   "status": "PENDING",
-                  "totalAmount": 99.99
+                  "totalAmount": 99.99,
+                  "customerId": 1,
+                  "showId": 1
                 }
                 """;
 
@@ -70,7 +68,7 @@ class BookingConsumerTest {
         assertThat(logs).anyMatch(e -> e.getFormattedMessage()
                 .contains("Parsed from JsonNode -> id=202, status=PENDING, totalAmount=99.99"));
 
-        assertThat(logs).noneMatch(e -> e.getFormattedMessage().contains("Customer name"));
+        assertThat(logs).noneMatch(e -> e.getFormattedMessage().contains("Customer Name"));
     }
 
     @Test

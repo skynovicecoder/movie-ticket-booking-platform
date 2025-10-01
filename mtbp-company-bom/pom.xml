@@ -35,7 +35,7 @@
             </dependency>
             <!-- Shared modules -->
             <dependency>
-                <groupId>com.company.mtbp</groupId>
+                <groupId>com.company.mtbp.shared</groupId>
                 <artifactId>mtbp-shared-dto</artifactId>
                 <version>1.0.0</version>
             </dependency>

@@ -35,10 +35,8 @@ class PaymentConsumerTest {
                   "id": 101,
                   "status": "SUCCESS",
                   "totalAmount": 123.45,
-                  "customer": {
-                    "name": "Alice",
-                    "email": "alice@example.com"
-                  }
+                  "customerId": 1,
+                  "showId": 1
                 }
                 """;
 
@@ -47,9 +45,7 @@ class PaymentConsumerTest {
         List<ILoggingEvent> logs = listAppender.list;
 
         assertThat(logs).anyMatch(e -> e.getFormattedMessage()
-                .contains("Parsed from JsonNode -> id=101, status=SUCCESS, totalAmount=123.45"));
-        assertThat(logs).anyMatch(e -> e.getFormattedMessage()
-                .contains("Customer name: Alice"));
+                .contains("Parsed from JsonNode -> id=101, status=SUCCESS, totalAmount=123.45, customerId=1, showId=1"));
     }
 
     @Test
@@ -58,7 +54,9 @@ class PaymentConsumerTest {
                 {
                   "id": 102,
                   "status": "FAILED",
-                  "totalAmount": 99.99
+                  "totalAmount": 99.99,
+                  "customerId": 1,
+                  "showId": 1
                 }
                 """;
 

@@ -29,14 +29,10 @@ public class BookingConsumer {
             Long id = rootNode.get("id").asLong();
             String status = rootNode.get("status").asText();
             Double amount = rootNode.get("totalAmount").asDouble();
+            Long customerId = rootNode.get("customerId").asLong();
+            Long showId = rootNode.get("showId").asLong();
 
-            log.info("Parsed from JsonNode -> id={}, status={}, totalAmount={}", id, status, amount);
-
-            JsonNode customerNode = rootNode.get("customer");
-            if (customerNode != null) {
-                String customerName = customerNode.get("name").asText();
-                log.info("Customer name: {}", customerName);
-            }
+            log.info("Parsed from JsonNode -> id={}, status={}, totalAmount={}, customerId={}, showId={}", id, status, amount, customerId, showId);
 
         } catch (Exception e) {
             log.error("Failed to parse message into JsonNode : {}", e.getMessage());

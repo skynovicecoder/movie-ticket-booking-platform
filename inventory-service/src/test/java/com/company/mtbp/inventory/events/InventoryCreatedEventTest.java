@@ -64,21 +64,21 @@ class InventoryCreatedEventTest {
 
         InventoryCreatedEvent event = new InventoryCreatedEvent(
                 500L,
-                customer,
-                show,
+                customer.getId(),
+                show.getId(),
                 bookingTime,
                 300.0,
                 "CONFIRMED",
-                List.of(detail1, detail2)
+                List.of(detail1.getId(), detail2.getId())
         );
 
         assertThat(event.id()).isEqualTo(500L);
-        assertThat(event.customer()).isEqualTo(customer);
-        assertThat(event.show()).isEqualTo(show);
+        assertThat(event.customerId()).isEqualTo(customer.getId());
+        assertThat(event.showId()).isEqualTo(show.getId());
         assertThat(event.bookingTime()).isEqualTo(bookingTime);
         assertThat(event.totalAmount()).isEqualTo(300.0);
         assertThat(event.status()).isEqualTo("CONFIRMED");
-        assertThat(event.bookingDetails()).containsExactly(detail1, detail2);
+        assertThat(event.bookingDetailIds()).containsExactly(detail1.getId(), detail2.getId());
 
         String eventStr = event.toString();
         assertThat(eventStr).contains("500", "CONFIRMED");
@@ -104,8 +104,8 @@ class InventoryCreatedEventTest {
                 .build();
 
         LocalDateTime now = LocalDateTime.now();
-        InventoryCreatedEvent event1 = new InventoryCreatedEvent(1L, customer, show, now, 150.0, "CONFIRMED", List.of(detail));
-        InventoryCreatedEvent event2 = new InventoryCreatedEvent(1L, customer, show, now, 150.0, "CONFIRMED", List.of(detail));
+        InventoryCreatedEvent event1 = new InventoryCreatedEvent(1L, customer.getId(), show.getId(), now, 150.0, "CONFIRMED", List.of(detail.getId()));
+        InventoryCreatedEvent event2 = new InventoryCreatedEvent(1L, customer.getId(), show.getId(), now, 150.0, "CONFIRMED", List.of(detail.getId()));
 
         assertThat(event1).isEqualTo(event2);
         assertThat(event1.hashCode()).isEqualTo(event2.hashCode());

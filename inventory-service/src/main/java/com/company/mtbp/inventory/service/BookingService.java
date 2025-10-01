@@ -72,13 +72,14 @@ public class BookingService {
         booking.setTotalAmount(total);
         bookingRepository.save(booking);
 
-        publishInventoryEvent(booking);
+        BookingDTO bookingDto = bookingMapper.toDTO(booking);
+        publishInventoryEvent(bookingDto);
 
-        return bookingMapper.toDTO(booking);
+        return bookingDto;
     }
 
-    private void publishInventoryEvent(Booking booking) {
-        InventoryCreatedEvent event = inventoryCreatedEventMapper.toEvent(booking);
+    private void publishInventoryEvent(BookingDTO bookingDto) {
+        InventoryCreatedEvent event = inventoryCreatedEventMapper.toEvent(bookingDto);
         try {
             inventoryEventPublisher.sendMessage(objectMapper.writeValueAsString(event));
         } catch (JsonProcessingException e) {
@@ -102,9 +103,10 @@ public class BookingService {
         booking.setTotalAmount(total);
         bookingRepository.save(booking);
 
-        publishInventoryEvent(booking);
+        BookingDTO bookingDto = bookingMapper.toDTO(booking);
+        publishInventoryEvent(bookingDto);
 
-        return bookingMapper.toDTO(booking);
+        return bookingDto;
     }
 
     @Transactional
@@ -127,9 +129,10 @@ public class BookingService {
 
         bookingRepository.save(booking);
 
-        publishInventoryEvent(booking);
+        BookingDTO bookingDto = bookingMapper.toDTO(booking);
+        publishInventoryEvent(bookingDto);
 
-        return bookingMapper.toDTO(booking);
+        return bookingDto;
     }
 
     private void releaseAllSeats(List<BookingDetail> bookingDetails) {

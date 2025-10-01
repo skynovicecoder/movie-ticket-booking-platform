@@ -96,6 +96,8 @@ class BookingServiceTest {
         sampleBooking = new Booking();
         sampleBooking.setId(1L);
         sampleBooking.setStatus("BOOKED");
+        List<BookingDetail> bookingDtls = List.of(new BookingDetail(1L, sampleBooking, sampleSeat, sampleShow, 450.0, 50.0));
+        sampleBooking.setBookingDetails(bookingDtls);
 
         sampleBookingDTO = new BookingDTO();
         sampleBookingDTO.setId(1L);
@@ -112,14 +114,14 @@ class BookingServiceTest {
 
         InventoryCreatedEvent sampleEvent = new InventoryCreatedEvent(
                 sampleBooking.getId(),
-                sampleCustomer,
-                sampleShow,
+                sampleCustomer.getId(),
+                sampleShow.getId(),
                 sampleBooking.getBookingTime(),
                 sampleBooking.getTotalAmount(),
                 sampleBooking.getStatus(),
-                sampleBooking.getBookingDetails()
+                sampleBooking.getBookingDetails().stream().map(BookingDetail::getId).toList()
         );
-        when(inventoryCreatedEventMapper.toEvent(sampleBooking)).thenReturn(sampleEvent);
+        when(inventoryCreatedEventMapper.toEvent(sampleBookingDTO)).thenReturn(sampleEvent);
         when(objectMapper.writeValueAsString(sampleEvent)).thenReturn("{\"id\":1}");
 
         BookingDTO result = bookingService.bookTickets(sampleCustomerDTO, sampleShowDTO, List.of(101L));
@@ -153,14 +155,14 @@ class BookingServiceTest {
 
         InventoryCreatedEvent sampleEvent = new InventoryCreatedEvent(
                 sampleBooking.getId(),
-                sampleCustomer,
-                sampleShow,
+                sampleCustomer.getId(),
+                sampleShow.getId(),
                 sampleBooking.getBookingTime(),
                 sampleBooking.getTotalAmount(),
                 sampleBooking.getStatus(),
-                sampleBooking.getBookingDetails()
+                sampleBooking.getBookingDetails().stream().map(BookingDetail::getId).toList()
         );
-        when(inventoryCreatedEventMapper.toEvent(sampleBooking)).thenReturn(sampleEvent);
+        when(inventoryCreatedEventMapper.toEvent(sampleBookingDTO)).thenReturn(sampleEvent);
         when(objectMapper.writeValueAsString(sampleEvent)).thenReturn("{\"id\":1}");
 
         BookingDTO result = bookingService.bulkBookTickets(sampleCustomerDTO, sampleShowDTO, 1);
@@ -190,14 +192,14 @@ class BookingServiceTest {
 
         InventoryCreatedEvent sampleEvent = new InventoryCreatedEvent(
                 sampleBooking.getId(),
-                sampleCustomer,
-                sampleShow,
+                sampleCustomer.getId(),
+                sampleShow.getId(),
                 sampleBooking.getBookingTime(),
                 sampleBooking.getTotalAmount(),
                 sampleBooking.getStatus(),
-                sampleBooking.getBookingDetails()
+                sampleBooking.getBookingDetails().stream().map(BookingDetail::getId).toList()
         );
-        when(inventoryCreatedEventMapper.toEvent(sampleBooking)).thenReturn(sampleEvent);
+        when(inventoryCreatedEventMapper.toEvent(sampleBookingDTO)).thenReturn(sampleEvent);
         when(objectMapper.writeValueAsString(sampleEvent)).thenReturn("{\"id\":1}");
 
         BookingDTO result = bookingService.cancelBooking(1L);

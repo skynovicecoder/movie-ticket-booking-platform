@@ -33,7 +33,7 @@ public class GlobalExceptionHandler {
         String details = ex.getMessage();
         log.error("Logging InventoryServiceException : {}", details);
         ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.SERVICE_UNAVAILABLE);
-        pd.setType(URI.create("urn:problem-type:server-for-employee-service-unavailable"));
+        pd.setType(URI.create("urn:problem-type:inventory-service-problem"));
         pd.setDetail("Inventory Error Details : " + details);
         pd.setTitle("Inventory Service Error");
 
