@@ -1,0 +1,16 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092   # Kafka broker exposed from Inventory service
+    consumer:
+      group-id: booking-service-group   # Kafka consumer group
+      auto-offset-reset: earliest       # read from beginning if no offset exists
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+booking:
+  kafka:
+    topic: mtbp-shared-topic
+    group: booking-service-group
+
+server:
+  port: 8082

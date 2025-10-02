@@ -33,17 +33,6 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>3.14.0</version>
             </dependency>
-            <!-- Shared modules -->
-            <dependency>
-                <groupId>com.company.mtbp</groupId>
-                <artifactId>mtbp-shared-dto</artifactId>
-                <version>1.0.0</version>
-            </dependency>
-            <dependency>
-                <groupId>com.company.mtbp</groupId>
-                <artifactId>mtbp-shared-utils</artifactId>
-                <version>1.0.0</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

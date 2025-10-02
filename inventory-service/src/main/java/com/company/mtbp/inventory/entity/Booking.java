@@ -1,5 +1,6 @@
 package com.company.mtbp.inventory.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +23,7 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "customer_id")
     @ToString.Exclude
+    @JsonBackReference
     private Customer customer;
 
     @ManyToOne

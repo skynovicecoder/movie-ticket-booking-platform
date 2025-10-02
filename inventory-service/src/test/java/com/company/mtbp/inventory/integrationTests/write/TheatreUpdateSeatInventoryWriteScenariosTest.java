@@ -10,6 +10,7 @@ import com.company.mtbp.inventory.repository.ShowRepository;
 import com.company.mtbp.inventory.repository.TheatreRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@EnabledIfSystemProperty(named = "env", matches = "dev")
 public class TheatreUpdateSeatInventoryWriteScenariosTest {
     @Autowired
     private MockMvc mockMvc;

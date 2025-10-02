@@ -1,5 +1,6 @@
 package com.company.mtbp.inventory.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +29,7 @@ public class Customer {
 
     @OneToMany(mappedBy = "customer")
     @ToString.Exclude
+    @JsonManagedReference
     private List<Booking> bookings;
 
     @ManyToMany(fetch = FetchType.EAGER)
