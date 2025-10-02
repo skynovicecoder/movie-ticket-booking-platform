@@ -1,5 +1,6 @@
 package com.company.mtbp.booking.service;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
@@ -7,8 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,11 +20,25 @@ class BookingConsumerTest {
     void setUp() {
         bookingConsumer = new BookingConsumer(new ObjectMapper());
 
-        Logger logger = (Logger) LoggerFactory.getLogger(BookingConsumer.class);
+        Logger bookingLogger = (Logger) LoggerFactory.getLogger(BookingConsumer.class);
+        Logger baseLogger = (Logger) LoggerFactory.getLogger("com.company.mtbp.common.kafka.consumers.BaseKafkaConsumer");
+
         listAppender = new ListAppender<>();
         listAppender.start();
-        logger.detachAndStopAllAppenders();
-        logger.addAppender(listAppender);
+
+        bookingLogger.detachAndStopAllAppenders();
+        bookingLogger.addAppender(listAppender);
+
+        baseLogger.detachAndStopAllAppenders();
+        baseLogger.addAppender(listAppender);
+    }
+
+    private void assertLogContains(Level level, String substring) {
+        assertThat(listAppender.list)
+                .anySatisfy(logEvent -> {
+                    assertThat(logEvent.getLevel()).isEqualTo(level);
+                    assertThat(logEvent.getFormattedMessage()).contains(substring);
+                });
     }
 
     @Test
@@ -42,11 +55,8 @@ class BookingConsumerTest {
 
         bookingConsumer.consume(message);
 
-        List<ILoggingEvent> logs = listAppender.list;
-
-        assertThat(logs).anyMatch(e -> e.getFormattedMessage()
-                .contains("Parsed from JsonNode -> id=101, status=CONFIRMED, totalAmount=250.75, customerId=1, showId=1"));
-
+        assertLogContains(Level.INFO, "Received raw message");
+        assertLogContains(Level.INFO, "Parsed BookingEvent -> id=101, status=CONFIRMED, totalAmount=250.75, customerId=1, showId=1");
     }
 
     @Test
@@ -56,19 +66,16 @@ class BookingConsumerTest {
                   "id": 202,
                   "status": "PENDING",
                   "totalAmount": 99.99,
-                  "customerId": 1,
                   "showId": 1
                 }
                 """;
 
         bookingConsumer.consume(message);
 
-        List<ILoggingEvent> logs = listAppender.list;
-
-        assertThat(logs).anyMatch(e -> e.getFormattedMessage()
-                .contains("Parsed from JsonNode -> id=202, status=PENDING, totalAmount=99.99"));
-
-        assertThat(logs).noneMatch(e -> e.getFormattedMessage().contains("Customer Name"));
+        assertLogContains(Level.INFO, "Received raw message");
+        assertLogContains(Level.ERROR, "Failed to parse message into JsonNode");
+        assertThat(listAppender.list)
+                .noneMatch(e -> e.getFormattedMessage().contains("Customer Name"));
     }
 
     @Test
@@ -77,9 +84,6 @@ class BookingConsumerTest {
 
         bookingConsumer.consume(invalidMessage);
 
-        List<ILoggingEvent> logs = listAppender.list;
-
-        assertThat(logs).anyMatch(e -> e.getFormattedMessage()
-                .contains("Failed to parse message into JsonNode"));
+        assertLogContains(Level.ERROR, "Failed to parse message into JsonNode");
     }
 }

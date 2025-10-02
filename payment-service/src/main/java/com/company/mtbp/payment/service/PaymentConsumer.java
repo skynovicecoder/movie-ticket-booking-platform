@@ -1,5 +1,6 @@
 package com.company.mtbp.payment.service;
 
+import com.company.mtbp.common.kafka.consumers.BaseKafkaConsumer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -8,34 +9,32 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class PaymentConsumer {
-
-    private final ObjectMapper objectMapper;
+public class PaymentConsumer extends BaseKafkaConsumer {
 
     public PaymentConsumer(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
+        super(objectMapper);
     }
 
+    @Override
     @KafkaListener(
             topics = "${payment.kafka.topic}",
             groupId = "${payment.kafka.group}"
     )
     public void consume(String message) {
-        log.info("Payment Service Received raw message: {}", message);
+        super.consume(message);
+    }
 
-        try {
-            JsonNode rootNode = objectMapper.readTree(message);
+    @Override
+    protected void handleMessage(JsonNode rootNode) {
+        Long id = rootNode.get("id").asLong();
+        String status = rootNode.get("status").asText();
+        Double amount = rootNode.get("totalAmount").asDouble();
+        Long customerId = rootNode.get("customerId").asLong();
+        Long showId = rootNode.get("showId").asLong();
 
-            Long id = rootNode.get("id").asLong();
-            String status = rootNode.get("status").asText();
-            Double amount = rootNode.get("totalAmount").asDouble();
-            Long customerId = rootNode.get("customerId").asLong();
-            Long showId = rootNode.get("showId").asLong();
+        log.info("Parsed PaymentEvent -> id={}, status={}, totalAmount={}, customerId={}, showId={}",
+                id, status, amount, customerId, showId);
 
-            log.info("Parsed from JsonNode -> id={}, status={}, totalAmount={}, customerId={}, showId={}", id, status, amount, customerId, showId);
-
-        } catch (Exception e) {
-            log.error("Failed to parse message into JsonNode : {}", e.getMessage());
-        }
+        // TODO: Implement payment-specific business logic (e.g., update payment status in DB)
     }
 }

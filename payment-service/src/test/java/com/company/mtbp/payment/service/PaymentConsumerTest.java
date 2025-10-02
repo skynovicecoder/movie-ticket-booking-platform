@@ -1,5 +1,6 @@
 package com.company.mtbp.payment.service;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
@@ -21,11 +22,31 @@ class PaymentConsumerTest {
     void setUp() {
         paymentConsumer = new PaymentConsumer(new ObjectMapper());
 
-        Logger logger = (Logger) LoggerFactory.getLogger(PaymentConsumer.class);
+        paymentConsumer = new PaymentConsumer(new ObjectMapper());
+
+        Logger baseLogger = (Logger) LoggerFactory.getLogger("com.company.mtbp.common.kafka.consumers.BaseKafkaConsumer");
+        Logger paymentLogger = (Logger) LoggerFactory.getLogger(PaymentConsumer.class);
+
         listAppender = new ListAppender<>();
         listAppender.start();
-        logger.detachAndStopAllAppenders();
-        logger.addAppender(listAppender);
+
+        baseLogger.detachAndStopAllAppenders();
+        baseLogger.addAppender(listAppender);
+
+        paymentLogger.detachAndStopAllAppenders();
+        paymentLogger.addAppender(listAppender);
+    }
+
+    private List<ILoggingEvent> getLogs() {
+        return listAppender.list;
+    }
+
+    private void assertLogContains(Level level, String substring) {
+        assertThat(getLogs())
+                .anySatisfy(log -> {
+                    assertThat(log.getLevel()).isEqualTo(level);
+                    assertThat(log.getFormattedMessage()).contains(substring);
+                });
     }
 
     @Test
@@ -42,31 +63,26 @@ class PaymentConsumerTest {
 
         paymentConsumer.consume(message);
 
-        List<ILoggingEvent> logs = listAppender.list;
-
-        assertThat(logs).anyMatch(e -> e.getFormattedMessage()
-                .contains("Parsed from JsonNode -> id=101, status=SUCCESS, totalAmount=123.45, customerId=1, showId=1"));
+        assertLogContains(Level.INFO, "Parsed PaymentEvent -> id=101, status=SUCCESS, totalAmount=123.45, customerId=1, showId=1");
+        assertLogContains(Level.INFO, "Received raw message");
     }
 
     @Test
-    void testConsume_MissingCustomer() {
+    void testConsume_MissingOptionalField() {
         String message = """
                 {
                   "id": 102,
                   "status": "FAILED",
                   "totalAmount": 99.99,
-                  "customerId": 1,
-                  "showId": 1
+                  "customerId": 1
                 }
                 """;
 
         paymentConsumer.consume(message);
 
-        List<ILoggingEvent> logs = listAppender.list;
+        assertLogContains(Level.ERROR, "Failed to parse message into JsonNode");
 
-        assertThat(logs).anyMatch(e -> e.getFormattedMessage()
-                .contains("Parsed from JsonNode -> id=102, status=FAILED, totalAmount=99.99"));
-        assertThat(logs).noneMatch(e -> e.getFormattedMessage().contains("Customer name"));
+        assertLogContains(Level.INFO, "Received raw message");
     }
 
     @Test
@@ -75,9 +91,7 @@ class PaymentConsumerTest {
 
         paymentConsumer.consume(invalidMessage);
 
-        List<ILoggingEvent> logs = listAppender.list;
-
-        assertThat(logs).anyMatch(e -> e.getFormattedMessage()
-                .contains("Failed to parse message into JsonNode"));
+        assertLogContains(Level.ERROR, "Failed to parse message into JsonNode");
+        assertLogContains(Level.INFO, "Received raw message");
     }
 }
