@@ -1,2 +1,43 @@
+spring:
+  application:
+    name: audience-service
+
+resilience4j:
+  retry:
+    instances:
+      bookingService:
+        maxAttempts: 3
+        waitDuration: 1s
+        #ignoreExceptions:
+         # - com.company.mtbp.customer.exception.NonRetryableException
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - com.company.mtbp.customer.exception.BookingException
+          - com.company.mtbp.customer.exception.PaymentException
+      paymentService:
+        maxAttempts: 5
+        waitDuration: 1s
+        retryExceptions:
+          - java.io.IOException
+          - java.util.concurrent.TimeoutException
+          - com.company.mtbp.customer.exception.BookingException
+          - com.company.mtbp.customer.exception.PaymentException
+
+  circuitbreaker:
+    instances:
+      bookingService:
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+      paymentService:
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
 server:
   port: 8081
