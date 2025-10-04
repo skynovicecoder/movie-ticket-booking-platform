@@ -75,4 +75,18 @@ class AudienceBookingRequestTest {
         Set<ConstraintViolation<AudienceBookingRequest>> violations = validator.validate(validRequest);
         assertTrue(violations.isEmpty());
     }
+
+    @Test
+    void noArgsConstructorAndToString_ShouldBeCovered() {
+        AudienceBookingRequest request = new AudienceBookingRequest();
+        request.setCustomerId(10L);
+        request.setShowId(20L);
+        request.setSeatIds(Arrays.asList(1L, 2L));
+
+        String str = request.toString();
+        assertNotNull(str);
+        assertTrue(str.contains("customerId=10"));
+        assertTrue(str.contains("showId=20"));
+        assertTrue(str.contains("seatIds=[1, 2]"));
+    }
 }
