@@ -98,6 +98,7 @@ class TheatrePartnerControllerTest {
     @Test
     void updateSeat_ShouldReturnOkStatus() throws Exception {
         SeatUpdateRequest request = new SeatUpdateRequest();
+        request.setSeatNumber("V1");
 
         Mockito.when(theatreSeatService.updateSeat(eq(10L), eq(1L), any(SeatUpdateRequest.class)))
                 .thenReturn("Seat updated successfully");

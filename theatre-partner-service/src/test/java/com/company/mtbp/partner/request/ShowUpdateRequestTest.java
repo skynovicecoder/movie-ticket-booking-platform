@@ -42,49 +42,4 @@ class ShowUpdateRequestTest {
         assertThat(request.getPricePerTicket()).isEqualTo(300.0);
         assertThat(request.getShowType()).isEqualTo("3D");
     }
-
-    @Test
-    void testEqualsAndHashCode() {
-        ShowUpdateRequest req1 = new ShowUpdateRequest(
-                LocalDate.of(2025, 10, 5),
-                LocalTime.of(18, 0),
-                LocalTime.of(20, 30),
-                250.0,
-                "IMAX"
-        );
-        ShowUpdateRequest req2 = new ShowUpdateRequest(
-                LocalDate.of(2025, 10, 5),
-                LocalTime.of(18, 0),
-                LocalTime.of(20, 30),
-                250.0,
-                "IMAX"
-        );
-        ShowUpdateRequest req3 = new ShowUpdateRequest(
-                LocalDate.of(2025, 11, 1),
-                LocalTime.of(19, 0),
-                LocalTime.of(21, 0),
-                300.0,
-                "3D"
-        );
-
-        assertThat(req1).isEqualTo(req2);
-        assertThat(req1.hashCode()).isEqualTo(req2.hashCode());
-
-        assertThat(req1).isNotEqualTo(req3);
-        assertThat(req1.hashCode()).isNotEqualTo(req3.hashCode());
-    }
-
-    @Test
-    void testToString() {
-        ShowUpdateRequest request = new ShowUpdateRequest(
-                LocalDate.of(2025, 10, 5),
-                LocalTime.of(18, 0),
-                LocalTime.of(20, 30),
-                250.0,
-                "IMAX"
-        );
-
-        String str = request.toString();
-        assertThat(str).contains("2025-10-05", "18:00", "20:30", "250.0", "IMAX");
-    }
 }

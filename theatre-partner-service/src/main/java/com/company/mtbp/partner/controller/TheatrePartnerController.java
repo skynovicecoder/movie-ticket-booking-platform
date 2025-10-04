@@ -6,6 +6,8 @@ import com.company.mtbp.partner.request.ShowRequest;
 import com.company.mtbp.partner.request.ShowUpdateRequest;
 import com.company.mtbp.partner.service.TheatreSeatService;
 import com.company.mtbp.partner.service.TheatreShowService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +25,7 @@ public class TheatrePartnerController {
     }
 
     @PostMapping("/shows")
-    public ResponseEntity<String> createShow(@RequestBody ShowRequest request) {
+    public ResponseEntity<String> createShow(@Valid @RequestBody ShowRequest request) {
         String createdShow = theatreShowService.createShow(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -32,7 +34,7 @@ public class TheatrePartnerController {
 
     @PatchMapping("/shows/{id}")
     public ResponseEntity<String> updateShow(
-            @PathVariable Long id,
+            @NotNull @PathVariable Long id,
             @RequestBody ShowUpdateRequest request) {
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -40,7 +42,7 @@ public class TheatrePartnerController {
     }
 
     @DeleteMapping("/shows/{id}")
-    public ResponseEntity<String> deleteShow(@PathVariable Long id) {
+    public ResponseEntity<String> deleteShow(@NotNull @PathVariable Long id) {
         theatreShowService.deleteShow(id);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
@@ -48,16 +50,16 @@ public class TheatrePartnerController {
     }
 
     @PostMapping("/shows/seats")
-    public ResponseEntity<String> addSeat(@RequestBody SeatRequest request) {
+    public ResponseEntity<String> addSeat(@Valid @RequestBody SeatRequest request) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(theatreSeatService.addSeat(request));
     }
 
     @PatchMapping("/shows/theatre/{theatreId}/seat/{seatId}")
-    public ResponseEntity<String> updateSeat(@PathVariable Long theatreId,
-                                             @PathVariable Long seatId,
-                                             @RequestBody SeatUpdateRequest request) {
+    public ResponseEntity<String> updateSeat(@NotNull @PathVariable Long theatreId,
+                                             @NotNull @PathVariable Long seatId,
+                                             @Valid @RequestBody SeatUpdateRequest request) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(theatreSeatService.updateSeat(theatreId, seatId, request));
     }

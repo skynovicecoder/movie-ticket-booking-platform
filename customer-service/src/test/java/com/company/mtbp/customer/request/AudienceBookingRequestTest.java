@@ -10,7 +10,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AudienceBookingRequestTest {
 
@@ -45,18 +46,6 @@ class AudienceBookingRequestTest {
     }
 
     @Test
-    void testEqualsAndHashCode() {
-        AudienceBookingRequest req1 = new AudienceBookingRequest(1L, 2L, Arrays.asList(1L, 2L));
-        AudienceBookingRequest req2 = new AudienceBookingRequest(1L, 2L, Arrays.asList(1L, 2L));
-        AudienceBookingRequest req3 = new AudienceBookingRequest(3L, 4L, Arrays.asList(3L, 4L));
-
-        assertEquals(req1, req2);
-        assertEquals(req1.hashCode(), req2.hashCode());
-        assertNotEquals(req1, req3);
-        assertNotEquals(req1.hashCode(), req3.hashCode());
-    }
-
-    @Test
     void testValidationConstraints() {
         AudienceBookingRequest invalidRequest = new AudienceBookingRequest(null, null, null);
 
@@ -76,17 +65,4 @@ class AudienceBookingRequestTest {
         assertTrue(violations.isEmpty());
     }
 
-    @Test
-    void noArgsConstructorAndToString_ShouldBeCovered() {
-        AudienceBookingRequest request = new AudienceBookingRequest();
-        request.setCustomerId(10L);
-        request.setShowId(20L);
-        request.setSeatIds(Arrays.asList(1L, 2L));
-
-        String str = request.toString();
-        assertNotNull(str);
-        assertTrue(str.contains("customerId=10"));
-        assertTrue(str.contains("showId=20"));
-        assertTrue(str.contains("seatIds=[1, 2]"));
-    }
 }
