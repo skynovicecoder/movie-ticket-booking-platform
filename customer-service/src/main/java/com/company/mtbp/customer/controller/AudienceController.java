@@ -5,6 +5,7 @@ import com.company.mtbp.customer.request.PaymentRequest;
 import com.company.mtbp.customer.service.BookingService;
 import com.company.mtbp.customer.service.PaymentService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ public class AudienceController {
     }
 
     @PostMapping("/book")
-    public Mono<ResponseEntity<String>> bookTickets(@RequestBody AudienceBookingRequest request) {
+    public Mono<ResponseEntity<String>> bookTickets(@Valid @RequestBody AudienceBookingRequest request) {
         return bookingService.bookTickets(request)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> {
@@ -50,7 +51,9 @@ public class AudienceController {
     }
 
     @PostMapping("/bulk-book")
-    public Mono<ResponseEntity<String>> bulkBookTickets(Long customerId, Long showId, int numberOfTicketsReq) {
+    public Mono<ResponseEntity<String>> bulkBookTickets(@NotNull @RequestParam Long customerId,
+                                                        @NotNull @RequestParam Long showId,
+                                                        @NotNull @RequestParam int numberOfTicketsReq) {
         return bookingService.bulkBookTickets(customerId, showId, numberOfTicketsReq)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> {
@@ -68,7 +71,7 @@ public class AudienceController {
     }
 
     @PutMapping("/cancel/{bookingId}")
-    public Mono<ResponseEntity<String>> cancelBooking(@PathVariable Long bookingId) {
+    public Mono<ResponseEntity<String>> cancelBooking(@NotNull @PathVariable Long bookingId) {
         return bookingService.cancelBooking(bookingId)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> {
@@ -86,9 +89,9 @@ public class AudienceController {
     }
 
     @GetMapping("/browse-shows")
-    public Mono<ResponseEntity<String>> browseShows(@RequestParam String movieTitle,
-                                                    @RequestParam String cityName,
-                                                    @RequestParam String date) {
+    public Mono<ResponseEntity<String>> browseShows(@NotNull @RequestParam String movieTitle,
+                                                    @NotNull @RequestParam String cityName,
+                                                    @NotNull @RequestParam String date) {
         return bookingService.browseShows(movieTitle, cityName, date)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> {
@@ -106,8 +109,8 @@ public class AudienceController {
     }
 
     @GetMapping("/offers")
-    public Mono<ResponseEntity<String>> getOffers(@RequestParam Long cityId,
-                                                  @RequestParam Long theatreId) {
+    public Mono<ResponseEntity<String>> getOffers(@NotNull @RequestParam Long cityId,
+                                                  @NotNull @RequestParam Long theatreId) {
         return bookingService.getOffers(cityId, theatreId)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> {
