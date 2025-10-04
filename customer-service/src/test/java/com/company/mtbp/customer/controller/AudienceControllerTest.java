@@ -37,6 +37,7 @@ class AudienceControllerTest {
         @Bean
         public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
             return http
+                    // CSRF is disabled because this is a stateless API using JWT tokens
                     .csrf(csrf -> csrf.disable())
                     .authorizeExchange(auth -> auth.anyExchange().permitAll())
                     .build();
