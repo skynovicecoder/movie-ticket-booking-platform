@@ -9,8 +9,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -27,6 +31,17 @@ class AudienceControllerTest {
     private PaymentService paymentService;
 
     private AudienceController controller;
+
+    @TestConfiguration
+    static class TestSecurityConfig {
+        @Bean
+        public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
+            return http
+                    .csrf(csrf -> csrf.disable())
+                    .authorizeExchange(auth -> auth.anyExchange().permitAll())
+                    .build();
+        }
+    }
 
     @BeforeEach
     void setUp() {
