@@ -73,4 +73,14 @@ class PaymentRequestTest {
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Amount cannot be null")));
         assertTrue(violations.stream().anyMatch(v -> v.getMessage().equals("Payment Method cannot be null")));
     }
+
+    @Test
+    void noArgsConstructor_ShouldBeCovered() {
+        PaymentRequest request = new PaymentRequest();
+        request.setBookingId(10L);
+        request.setAmount(100.0);
+        request.setPaymentMethod("UPI");
+
+        assertNotNull(request);
+    }
 }

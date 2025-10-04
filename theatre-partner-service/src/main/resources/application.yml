@@ -1,2 +1,67 @@
+spring:
+  application:
+    name: theatre-partner-service
+inventory:
+  server:
+    url: http://localhost:8083
+
+resilience4j:
+  retry:
+    instances:
+      theatreShowService:
+        maxAttempts: 3
+        waitDuration: 1s
+        #ignoreExceptions:
+        # - com.company.mtbp.customer.exception.NonRetryableException
+        retryExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.RestClientException
+          - java.nio.channels.ClosedChannelException
+          - com.company.mtbp.partner.exception.TheatrePartnerException
+      theatreSeatService:
+        maxAttempts: 5
+        waitDuration: 1s
+        retryExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+          - org.springframework.web.client.ResourceAccessException
+          - org.springframework.web.client.RestClientException
+          - java.nio.channels.ClosedChannelException
+          - com.company.mtbp.partner.exception.TheatrePartnerException
+
+  circuitbreaker:
+    instances:
+      theatreShowService:
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+      theatreSeatService:
+        slidingWindowSize: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: alpha
+    tagsSorter: alpha
+    display-request-duration: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,httptrace
+  endpoint:
+    health:
+      show-details: always
 server:
   port: 8085

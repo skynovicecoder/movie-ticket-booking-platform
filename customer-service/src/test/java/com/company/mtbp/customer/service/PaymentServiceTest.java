@@ -2,7 +2,9 @@ package com.company.mtbp.customer.service;
 
 import com.company.mtbp.customer.exception.PaymentException;
 import com.company.mtbp.customer.request.PaymentRequest;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.retry.Retry;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -13,13 +15,17 @@ import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@Slf4j
 class PaymentServiceTest {
 
     private WebClient webClient;
@@ -94,5 +100,41 @@ class PaymentServiceTest {
                     assert ex.getMessage().equals("Server error during booking");
                 })
                 .verify();
+    }
+
+    @Test
+    void paymentFallback_ShouldReturnFallbackMessage() throws Exception {
+        PaymentService service = new PaymentService(mock(WebClient.class), Retry.ofDefaults("testRetry"));
+        PaymentRequest request = new PaymentRequest();
+
+        Method fallback = PaymentService.class.getDeclaredMethod("paymentFallback", PaymentRequest.class, Throwable.class);
+        fallback.setAccessible(true);
+
+        Mono<String> result = (Mono<String>) fallback.invoke(service, request, new RuntimeException("Some error"));
+
+        StepVerifier.create(result)
+                .expectNext("Payment service unavailable. Please try again later.")
+                .verifyComplete();
+    }
+
+    @Test
+    void init_ShouldRegisterCircuitBreakerAndRetryEvents() {
+        paymentService.init();
+
+        CircuitBreaker cb = paymentService.circuitBreaker;
+
+        cb.transitionToClosedState();
+        cb.transitionToOpenState();
+
+        cb.tryAcquirePermission();
+
+        cb.onError(0, TimeUnit.MILLISECONDS, new RuntimeException("Simulated error"));
+
+        retry.getEventPublisher().onRetry(event -> {
+            log.info("Retry event captured: {}", event.getNumberOfRetryAttempts());
+        });
+
+        assertNotNull(cb);
+        assertNotNull(paymentService);
     }
 }

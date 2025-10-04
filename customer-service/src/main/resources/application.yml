@@ -1,6 +1,9 @@
 spring:
   application:
     name: audience-service
+inventory:
+  server:
+    url: http://localhost:8083
 
 resilience4j:
   retry:

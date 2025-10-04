@@ -120,4 +120,258 @@ class AudienceControllerTest {
                 })
                 .verifyComplete();
     }
+
+    @Test
+    void testBookTicketsServerError() {
+        AudienceBookingRequest request = new AudienceBookingRequest();
+        Mockito.when(bookingService.bookTickets(request))
+                .thenReturn(Mono.error(new RuntimeException("Server error during booking")));
+
+        StepVerifier.create(controller.bookTickets(request))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.INTERNAL_SERVER_ERROR) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Server error during booking");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testBookTicketsUnexpectedError() {
+        AudienceBookingRequest request = new AudienceBookingRequest();
+        Mockito.when(bookingService.bookTickets(request))
+                .thenReturn(Mono.error(new RuntimeException("Database down")));
+
+        StepVerifier.create(controller.bookTickets(request))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.INTERNAL_SERVER_ERROR) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Unexpected error: Database down");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testBulkBookTicketsSuccess() {
+        Mockito.when(bookingService.bulkBookTickets(1L, 2L, 5))
+                .thenReturn(Mono.just("Bulk booking successful"));
+
+        StepVerifier.create(controller.bulkBookTickets(1L, 2L, 5))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.OK) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Bulk booking successful");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testBulkBookTicketsClientError() {
+        Mockito.when(bookingService.bulkBookTickets(1L, 2L, 5))
+                .thenReturn(Mono.error(new RuntimeException("Client error during bulk booking")));
+
+        StepVerifier.create(controller.bulkBookTickets(1L, 2L, 5))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.BAD_REQUEST) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Client error during bulk booking");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testBulkBookTicketsServerError() {
+        Mockito.when(bookingService.bulkBookTickets(1L, 2L, 5))
+                .thenReturn(Mono.error(new RuntimeException("Server error during bulk booking")));
+
+        StepVerifier.create(controller.bulkBookTickets(1L, 2L, 5))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.INTERNAL_SERVER_ERROR) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Server error during bulk booking");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testBulkBookTicketsUnexpectedError() {
+        Mockito.when(bookingService.bulkBookTickets(1L, 2L, 5))
+                .thenReturn(Mono.error(new RuntimeException("Database down")));
+
+        StepVerifier.create(controller.bulkBookTickets(1L, 2L, 5))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.INTERNAL_SERVER_ERROR) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Unexpected error: Database down");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testCancelBookingSuccess() {
+        Mockito.when(bookingService.cancelBooking(10L))
+                .thenReturn(Mono.just("Booking cancelled"));
+
+        StepVerifier.create(controller.cancelBooking(10L))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.OK) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Booking cancelled");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testCancelBookingClientError() {
+        Mockito.when(bookingService.cancelBooking(10L))
+                .thenReturn(Mono.error(new RuntimeException("Client error during cancel booking")));
+
+        StepVerifier.create(controller.cancelBooking(10L))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.BAD_REQUEST) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Client error during cancel booking");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testCancelBookingServerError() {
+        Mockito.when(bookingService.cancelBooking(10L))
+                .thenReturn(Mono.error(new RuntimeException("Server error during cancel booking")));
+
+        StepVerifier.create(controller.cancelBooking(10L))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.INTERNAL_SERVER_ERROR) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Server error during cancel booking");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testCancelBookingUnexpectedError() {
+        Mockito.when(bookingService.cancelBooking(10L))
+                .thenReturn(Mono.error(new RuntimeException("Unknown error")));
+
+        StepVerifier.create(controller.cancelBooking(10L))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.INTERNAL_SERVER_ERROR) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Unexpected error: Unknown error");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testBrowseShowsSuccess() {
+        Mockito.when(bookingService.browseShows("Pirates", "Hyderabad", "2025-09-30"))
+                .thenReturn(Mono.just("Shows found"));
+
+        StepVerifier.create(controller.browseShows("Pirates", "Hyderabad", "2025-09-30"))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.OK) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Shows found");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testBrowseShowsClientError() {
+        Mockito.when(bookingService.browseShows("Pirates", "Hyderabad", "2025-09-30"))
+                .thenReturn(Mono.error(new RuntimeException("Client error while browsing shows")));
+
+        StepVerifier.create(controller.browseShows("Pirates", "Hyderabad", "2025-09-30"))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.BAD_REQUEST) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Client error while browsing shows");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testBrowseShowsServerError() {
+        Mockito.when(bookingService.browseShows("Pirates", "Hyderabad", "2025-09-30"))
+                .thenReturn(Mono.error(new RuntimeException("Server error while browsing shows")));
+
+        StepVerifier.create(controller.browseShows("Pirates", "Hyderabad", "2025-09-30"))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.INTERNAL_SERVER_ERROR) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Server error while browsing shows");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testBrowseShowsUnexpectedError() {
+        Mockito.when(bookingService.browseShows("Pirates", "Hyderabad", "2025-09-30"))
+                .thenReturn(Mono.error(new RuntimeException("Timeout")));
+
+        StepVerifier.create(controller.browseShows("Pirates", "Hyderabad", "2025-09-30"))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.INTERNAL_SERVER_ERROR) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Unexpected error: Timeout");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testGetOffersSuccess() {
+        Mockito.when(bookingService.getOffers(1L, 3L))
+                .thenReturn(Mono.just("Offers found"));
+
+        StepVerifier.create(controller.getOffers(1L, 3L))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.OK) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Offers found");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testGetOffersClientError() {
+        Mockito.when(bookingService.getOffers(1L, 3L))
+                .thenReturn(Mono.error(new RuntimeException("Client error fetching offers")));
+
+        StepVerifier.create(controller.getOffers(1L, 3L))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.BAD_REQUEST) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Client error fetching offers");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testGetOffersServerError() {
+        Mockito.when(bookingService.getOffers(1L, 3L))
+                .thenReturn(Mono.error(new RuntimeException("Server error fetching offers")));
+
+        StepVerifier.create(controller.getOffers(1L, 3L))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.INTERNAL_SERVER_ERROR) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Server error fetching offers");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void testGetOffersUnexpectedError() {
+        Mockito.when(bookingService.getOffers(1L, 3L))
+                .thenReturn(Mono.error(new RuntimeException("Service down")));
+
+        StepVerifier.create(controller.getOffers(1L, 3L))
+                .expectNextMatches(resp -> {
+                    if (resp.getStatusCode() != HttpStatus.INTERNAL_SERVER_ERROR) return false;
+                    Assertions.assertNotNull(resp.getBody());
+                    return resp.getBody().equals("Unexpected error: Service down");
+                })
+                .verifyComplete();
+    }
 }
