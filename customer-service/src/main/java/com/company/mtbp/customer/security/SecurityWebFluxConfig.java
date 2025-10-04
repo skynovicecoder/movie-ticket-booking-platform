@@ -8,7 +8,10 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -23,8 +26,22 @@ public class SecurityWebFluxConfig {
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
-                // CSRF is disabled because this is a stateless API using JWT tokens
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf
+                        .requireCsrfProtectionMatcher(new ServerWebExchangeMatcher() {
+                            public Mono<MatchResult> matches(ServerWebExchange exchange) {
+                                String path = exchange.getRequest().getURI().getPath();
+                                String method = exchange.getRequest().getMethod().name();
+
+                                // CSRF is disabled because this is a stateless API using JWT tokens
+                                if (HttpMethod.GET.matches(method) ||
+                                        (path.startsWith("/actuator") || path.startsWith("/health") ||
+                                                path.startsWith("/swagger-ui") || path.startsWith("/api"))) {
+                                    return MatchResult.notMatch();
+                                }
+                                return MatchResult.match();
+                            }
+                        })
+                )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeExchange(exchanges -> exchanges
                         .anyExchange().permitAll()

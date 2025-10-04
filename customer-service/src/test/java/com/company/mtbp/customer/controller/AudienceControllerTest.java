@@ -11,11 +11,14 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -37,8 +40,22 @@ class AudienceControllerTest {
         @Bean
         public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
             return http
-                    // CSRF is disabled because this is a stateless API using JWT tokens
-                    .csrf(csrf -> csrf.disable())
+                    .csrf(csrf -> csrf
+                            .requireCsrfProtectionMatcher(new ServerWebExchangeMatcher() {
+                                public Mono<MatchResult> matches(ServerWebExchange exchange) {
+                                    String path = exchange.getRequest().getURI().getPath();
+                                    String method = exchange.getRequest().getMethod().name();
+
+                                    // CSRF is disabled because this is a stateless API using JWT tokens
+                                    if (HttpMethod.GET.matches(method) ||
+                                            (path.startsWith("/actuator") || path.startsWith("/health") ||
+                                                    path.startsWith("/swagger-ui") || path.startsWith("/api"))) {
+                                        return MatchResult.notMatch();
+                                    }
+                                    return MatchResult.match();
+                                }
+                            })
+                    )
                     .authorizeExchange(auth -> auth.anyExchange().permitAll())
                     .build();
         }
